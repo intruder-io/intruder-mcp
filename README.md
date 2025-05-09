@@ -8,6 +8,8 @@ A Claude MCP server for the Intruder API.
 2. Clone this repository
 3. Install dependencies:
 ```bash
+uv venv
+source .venv/bin/activate
 uv pip install -e .
 ```
 
