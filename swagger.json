@@ -1,0 +1,3264 @@
+{
+    "openapi": "3.0.4",
+    "info": {
+        "title": "Intruder API",
+        "version": "2.0.0",
+        "description": "Intruder API documentation",
+        "termsOfService": "https://www.intruder.io/legal/terms",
+        "contact": {
+            "email": "contact@intruder.io"
+        }
+    },
+    "paths": {
+        "/v1/health/": {
+            "get": {
+                "operationId": "health_list",
+                "description": "Checks the API is running normally. Returns the user's email if authenticated.",
+                "summary": "Health endpoint",
+                "tags": [
+                    "Health"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Health"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/issues/": {
+            "get": {
+                "operationId": "issues_list",
+                "description": "Lists current issues",
+                "summary": "Lists issues",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "issue_ids",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "description": "Issue IDs to filter by, separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "severity",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "critical",
+                                "high",
+                                "low",
+                                "medium"
+                            ]
+                        },
+                        "description": "Severity to filter by. The choices are `low`, `medium`, `high` and `critical`.\n\n* `low` - LOW\n* `medium` - MEDIUM\n* `high` - HIGH\n* `critical` - CRITICAL"
+                    },
+                    {
+                        "in": "query",
+                        "name": "snoozed",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Set to `true` to show snoozed issues. Set to `false` to show issues that are not snoozed."
+                    },
+                    {
+                        "in": "query",
+                        "name": "snoozed_only",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Equivalent to `snoozed` parameter (deprecated)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag_names",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Tag names to filter by, separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    },
+                    {
+                        "in": "query",
+                        "name": "target_addresses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Target addresses to filter by, separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    }
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedIssueList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/issues/{issue_id}/occurrences/": {
+            "get": {
+                "operationId": "issues_occurrences_list",
+                "description": "Lists occurrences for an issue",
+                "summary": "Lists occurrences for issue",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "issue_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Issue ID to retrieve",
+                        "required": true
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "snoozed",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Set to `true` to show snoozed occurrences. Set to `false` to show occurrences that are not snoozed."
+                    },
+                    {
+                        "in": "query",
+                        "name": "snoozed_only",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Equivalent to `snoozed` parameter (deprecated)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag_names",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Tag names to filter by, separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    },
+                    {
+                        "in": "query",
+                        "name": "target_addresses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Target addresses to filter by, separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    }
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedOccurrenceList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/issues/{issue_id}/occurrences/{occurrence_id}/scanner_output/": {
+            "get": {
+                "operationId": "issues_occurrences_scanner_output_list",
+                "description": "Lists scanner output for an occurrence of an issue",
+                "summary": "Lists scanner output for an occurrence of an issue",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "issue_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Issue ID to retrieve",
+                        "required": true
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "occurrence_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Occurrence ID to retrieve",
+                        "required": true
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedScannerOutputListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/licenses/": {
+            "get": {
+                "operationId": "licenses_list",
+                "description": "Lists infrastructure and application licenses",
+                "summary": "Lists infrastructure and application licenses",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Licenses"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLicensesList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/scans/": {
+            "get": {
+                "operationId": "scans_list",
+                "description": "Lists current scans",
+                "summary": "Lists current scans",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "scan_type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "advisory",
+                                "assessment_schedule",
+                                "cloud_security",
+                                "cloudbot_new_target",
+                                "new_service",
+                                "rapid_remediation"
+                            ]
+                        },
+                        "description": "* `assessment_schedule` - ASSESSMENT_SCHEDULE\n* `new_service` - NEW_SERVICE\n* `cloudbot_new_target` - CLOUDBOT_NEW_TARGET\n* `rapid_remediation` - RAPID_REMEDIATION\n* `advisory` - ADVISORY\n* `cloud_security` - CLOUD_SECURITY"
+                    },
+                    {
+                        "in": "query",
+                        "name": "schedule_period",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "daily",
+                                "monthly",
+                                "one_off",
+                                "quarterly",
+                                "weekly"
+                            ]
+                        },
+                        "description": "* `monthly` - MONTHLY\n* `daily` - DAILY\n* `one_off` - ONE_OFF\n* `weekly` - WEEKLY\n* `quarterly` - QUARTERLY"
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "0",
+                                "8",
+                                "analysing_results",
+                                "cancelled",
+                                "cancelled_no_active_targets",
+                                "cancelled_no_valid_targets",
+                                "completed",
+                                "in_progress"
+                            ]
+                        },
+                        "description": "Status to filter by. Valid choices are `in_progress`, `completed`, `cancelled`, `cancelled_no_active_targets` and `analysing_results`. Deprecated aliases: `0` (`completed`) and `8` (`cancelled`).\n\n* `in_progress` - IN_PROGRESS\n* `completed` - COMPLETED\n* `cancelled` - CANCELLED\n* `cancelled_no_active_targets` - CANCELLED_NO_ACTIVE_TARGETS\n* `cancelled_no_valid_targets` - CANCELLED_NO_VALID_TARGETS\n* `analysing_results` - ANALYSING_RESULTS\n* `0` - COMPLETED\n* `8` - CANCELLED"
+                    }
+                ],
+                "tags": [
+                    "Scans"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedScanListList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "scans_create",
+                "description": "Starts a scan. Optionally specify one or more target addresses and/or tags names in the request body. If no request body is provided, this starts a scan on all targets. You can have a maximum 500 active and scheduled scans.",
+                "summary": "Starts a scan",
+                "tags": [
+                    "Scans"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ScanRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Scan"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Cannot have more than 500 active scans"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while starting the scan."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/scans/{id}/": {
+            "get": {
+                "operationId": "scans_retrieve",
+                "description": "Retrieves scan details",
+                "summary": "Retrieves scan details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Scan ID to retrieve",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Scans"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Scan"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/scans/{id}/cancel/": {
+            "post": {
+                "operationId": "scans_cancel_create",
+                "description": "Cancels a scan",
+                "summary": "Cancels a scan",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Scan ID to cancel",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Scans"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": "Scan was cancelled"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while cancelling the scan."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/": {
+            "get": {
+                "operationId": "targets_list",
+                "description": "Lists targets",
+                "summary": "Lists targets",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "address",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Target address to filter by."
+                    },
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "target_status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "agent_uninstalled",
+                                "license_exceeded",
+                                "live",
+                                "unresponsive",
+                                "unscanned"
+                            ]
+                        },
+                        "description": "* `live` - LIVE\n* `license_exceeded` - LICENSE_EXCEEDED\n* `unscanned` - UNSCANNED\n* `unresponsive` - UNRESPONSIVE\n* `agent_uninstalled` - AGENT_UNINSTALLED"
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedTargetList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "targets_create",
+                "description": "Adds a target",
+                "summary": "Adds a target",
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TargetCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Target"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while creating target."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{id}/": {
+            "delete": {
+                "operationId": "targets_destroy",
+                "description": "Deletes a target",
+                "summary": "Deletes a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Target deleted successfully"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Target not found"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "currently being scanned targetId1, targetId2"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while deleting target."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/api_schemas/": {
+            "get": {
+                "operationId": "targets_api_schemas_list",
+                "description": "Lists API schemas for a target",
+                "summary": "Lists API schemas for a target",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID for API schemas to retrieve",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedTagsList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "targets_api_schemas_create",
+                "description": "Adds an API schema to a target",
+                "summary": "Adds an API schema to a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID for API schemas to destroy",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/APISchemasRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APISchemas"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while creating API schema."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/api_schemas/{id}/": {
+            "patch": {
+                "operationId": "targets_api_schemas_partial_update",
+                "description": "Updates an API schema on a target",
+                "summary": "Updates an API schema on a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID for API schemas to destroy",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAPISchemasRequest"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAPISchemasRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APISchemas"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while updating API schema."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "targets_api_schemas_destroy",
+                "description": "Deletes an API schemas from a target",
+                "summary": "Deletes an API schemas from a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID for API schemas to destroy",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No response body"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while deleting API schema."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/authentications/": {
+            "get": {
+                "operationId": "targets_authentications_list",
+                "description": "Lists authentications for a target",
+                "summary": "Lists authentications for a target",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page (the default is 25).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "required": false,
+                        "in": "query",
+                        "description": "The initial index from which to return the results.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID for authentications to retrieve",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedTargetAuthenticationsList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "targets_authentications_create",
+                "description": "Adds an authentication to a target",
+                "summary": "Adds an authentication to a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID to add the authentication to",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TargetAuthenticationsRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TargetAuthenticationsRequest"
+                            },
+                            "encoding": {
+                                "additional_parameters": {
+                                    "style": "form",
+                                    "explode": true
+                                },
+                                "headers": {
+                                    "style": "form",
+                                    "explode": true
+                                },
+                                "cookies": {
+                                    "style": "form",
+                                    "explode": true
+                                }
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TargetAuthentications"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while creating authentication for a target."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/authentications/{id}/": {
+            "patch": {
+                "operationId": "targets_authentications_partial_update",
+                "description": "Updates an authentication on a target",
+                "summary": "Updates an authentication on a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID of the authentication",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTargetAuthenticationsRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedTargetAuthenticationsRequest"
+                            },
+                            "encoding": {
+                                "additional_parameters": {
+                                    "style": "form",
+                                    "explode": true
+                                },
+                                "headers": {
+                                    "style": "form",
+                                    "explode": true
+                                },
+                                "cookies": {
+                                    "style": "form",
+                                    "explode": true
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TargetAuthentications"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while updating target authentication."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "targets_authentications_destroy",
+                "description": "Deletes an authentication from a target",
+                "summary": "Deletes an authentication from a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID of the authentication",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Authentication deleted successfully"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while deleting authentication for a target."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/tags/": {
+            "post": {
+                "operationId": "targets_tags_create",
+                "description": "Creates a tag for a target",
+                "summary": "Creates a tag for a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID of the tag",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TagsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Tags"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while creating the tag."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/{target_id}/tags/{name}/": {
+            "delete": {
+                "operationId": "targets_tags_destroy",
+                "description": "Deletes a tag from a target",
+                "summary": "Deletes a tag from a target",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "target_id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Target ID of the tag",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Targets"
+                ],
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Tag deleted from target successfully"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while deleting the tag."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/targets/bulk/": {
+            "post": {
+                "operationId": "targets_bulk_create",
+                "description": "Bulk adds multiple targets. Supports CIDR ranges",
+                "summary": "Bulk adds targets",
+                "tags": [
+                    "Targets"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "required": [
+                                        "address"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "address": {
+                                            "description": "Address of target to add.",
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Target"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Please specify at least one target to add."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while creating targets."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "APISchemas": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "base_url": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "target_authentication_id": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "base_url",
+                    "id",
+                    "name"
+                ]
+            },
+            "APISchemasRequest": {
+                "type": "object",
+                "properties": {
+                    "base_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "minLength": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "target_authentication_id": {
+                        "type": "integer"
+                    },
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "writeOnly": true
+                    }
+                },
+                "required": [
+                    "base_url",
+                    "file",
+                    "name"
+                ]
+            },
+            "ExploitLikelihoodEnum": {
+                "type": "string",
+                "enum": [
+                    "rare",
+                    "unlikely",
+                    "likely",
+                    "very_likely",
+                    "known",
+                    "unknown"
+                ]
+            },
+            "Health": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusEnum"
+                            }
+                        ],
+                        "description": "API health status\n\n* `All is good!` - All is good!"
+                    },
+                    "authenticated_as": {
+                        "type": "string",
+                        "format": "email",
+                        "description": "Authenticated user email"
+                    }
+                },
+                "required": [
+                    "authenticated_as",
+                    "status"
+                ]
+            },
+            "Issue": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "severity": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "remediation": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "snoozed": {
+                        "type": "boolean"
+                    },
+                    "snooze_reason": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "snooze_until": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "occurrences": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "exploit_likelihood": {
+                        "readOnly": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ExploitLikelihoodEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "cvss_score": {
+                        "type": "number",
+                        "format": "float",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "cvss_score",
+                    "description",
+                    "exploit_likelihood",
+                    "id",
+                    "occurrences",
+                    "remediation",
+                    "severity",
+                    "snooze_reason",
+                    "title"
+                ]
+            },
+            "LicenseTypeEnum": {
+                "enum": [
+                    0,
+                    1
+                ],
+                "type": "integer",
+                "description": "* `0` - INFRASTRUCTURE\n* `1` - AUTHENTICATION"
+            },
+            "Licenses": {
+                "type": "object",
+                "properties": {
+                    "total_infrastructure_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "available_infrastructure_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "consumed_infrastructure_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "total_application_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "available_application_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "consumed_application_licenses": {
+                        "type": "integer",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "available_application_licenses",
+                    "available_infrastructure_licenses",
+                    "consumed_application_licenses",
+                    "consumed_infrastructure_licenses",
+                    "total_application_licenses",
+                    "total_infrastructure_licenses"
+                ]
+            },
+            "NullEnum": {
+                "enum": [
+                    null
+                ]
+            },
+            "Occurrence": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "target": {
+                        "type": "string"
+                    },
+                    "port": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "protocol": {
+                        "type": "string"
+                    },
+                    "extra_info": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "age": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "snoozed": {
+                        "type": "boolean"
+                    },
+                    "snooze_reason": {
+                        "type": "string"
+                    },
+                    "snooze_until": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "exploit_likelihood": {
+                        "readOnly": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ExploitLikelihoodEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "cvss_score": {
+                        "type": "number",
+                        "format": "float",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "age",
+                    "cvss_score",
+                    "exploit_likelihood",
+                    "extra_info",
+                    "id",
+                    "port",
+                    "protocol",
+                    "snooze_reason",
+                    "snooze_until",
+                    "snoozed",
+                    "target"
+                ]
+            },
+            "PaginatedIssueList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Issue"
+                        }
+                    }
+                }
+            },
+            "PaginatedLicensesList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Licenses"
+                        }
+                    }
+                }
+            },
+            "PaginatedOccurrenceList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Occurrence"
+                        }
+                    }
+                }
+            },
+            "PaginatedScanListList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ScanList"
+                        }
+                    }
+                }
+            },
+            "PaginatedScannerOutputListList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ScannerOutputList"
+                        }
+                    }
+                }
+            },
+            "PaginatedTagsList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tags"
+                        }
+                    }
+                }
+            },
+            "PaginatedTargetAuthenticationsList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthentications"
+                        }
+                    }
+                }
+            },
+            "PaginatedTargetList": {
+                "type": "object",
+                "required": [
+                    "count",
+                    "results"
+                ],
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=400&limit=100"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?offset=200&limit=100"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Target"
+                        }
+                    }
+                }
+            },
+            "PatchedAPISchemasRequest": {
+                "type": "object",
+                "properties": {
+                    "base_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "minLength": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "target_authentication_id": {
+                        "type": "integer"
+                    },
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "writeOnly": true
+                    }
+                }
+            },
+            "PatchedTargetAuthenticationsRequest": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/TypeEnum"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "logout_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "logged_in_indicator": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "csrf_token_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_form_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "password_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "realm": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "username_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "is_ajax_spider_enabled": {
+                        "type": "boolean"
+                    },
+                    "recorded_login_file": {
+                        "type": "string",
+                        "format": "binary"
+                    },
+                    "additional_parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "cookies": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1
+                    },
+                    "username": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1
+                    }
+                }
+            },
+            "PluginDetail": {
+                "type": "object",
+                "properties": {
+                    "cve": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "cvss_base_score": {
+                        "type": "string"
+                    },
+                    "cvss3_base_score": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "cve",
+                    "cvss3_base_score",
+                    "cvss_base_score",
+                    "name"
+                ]
+            },
+            "Scan": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ScanStatusField"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "target_addresses": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Target addresses to include in scan."
+                    },
+                    "scan_type": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ScanTypeEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "schedule_period": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SchedulePeriodEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "completed_time": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "completed_time",
+                    "created_at",
+                    "id",
+                    "scan_type",
+                    "schedule_period",
+                    "start_time",
+                    "status"
+                ]
+            },
+            "ScanList": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ScanStatusField"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "scan_type": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ScanTypeEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "schedule_period": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/SchedulePeriodEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "scan_type",
+                    "schedule_period",
+                    "status"
+                ]
+            },
+            "ScanRequest": {
+                "type": "object",
+                "properties": {
+                    "target_addresses": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Target addresses to include in scan."
+                    },
+                    "tag_names": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "writeOnly": true,
+                        "description": "Tag names to include in scan."
+                    }
+                }
+            },
+            "ScanStatusField": {
+                "type": "string",
+                "enum": [
+                    "in_progress",
+                    "completed",
+                    "cancelled",
+                    "cancelled_no_active_targets",
+                    "cancelled_no_valid_targets",
+                    "analysing_results"
+                ]
+            },
+            "ScanTypeEnum": {
+                "enum": [
+                    "assessment_schedule",
+                    "new_service",
+                    "cloudbot_new_target",
+                    "rapid_remediation",
+                    "advisory",
+                    "cloud_security"
+                ],
+                "type": "string",
+                "description": "* `assessment_schedule` - ASSESSMENT_SCHEDULE\n* `new_service` - NEW_SERVICE\n* `cloudbot_new_target` - CLOUDBOT_NEW_TARGET\n* `rapid_remediation` - RAPID_REMEDIATION\n* `advisory` - ADVISORY\n* `cloud_security` - CLOUD_SECURITY"
+            },
+            "ScannerOutputList": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "plugin": {
+                        "$ref": "#/components/schemas/PluginDetail"
+                    },
+                    "scanner_output": {
+                        "type": "array",
+                        "items": {}
+                    }
+                },
+                "required": [
+                    "id",
+                    "plugin",
+                    "scanner_output"
+                ]
+            },
+            "SchedulePeriodEnum": {
+                "type": "string",
+                "enum": [
+                    "monthly",
+                    "daily",
+                    "one_off",
+                    "weekly",
+                    "quarterly"
+                ]
+            },
+            "StatusEnum": {
+                "enum": [
+                    "All is good!"
+                ],
+                "type": "string",
+                "description": "* `All is good!` - All is good!"
+            },
+            "Tags": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 40
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "TagsRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "Target": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "has_api_schemas": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "has_authentications": {
+                        "type": "boolean",
+                        "readOnly": true
+                    },
+                    "license_type": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/LicenseTypeEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "nullable": true
+                        },
+                        "readOnly": true
+                    },
+                    "target_status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TargetStatusEnum"
+                            }
+                        ],
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "address",
+                    "has_api_schemas",
+                    "has_authentications",
+                    "id",
+                    "license_type",
+                    "tags",
+                    "target_status"
+                ]
+            },
+            "TargetAuthenticationGenericJSONField": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name",
+                    "value"
+                ]
+            },
+            "TargetAuthenticationGenericJSONFieldRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "value": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "name",
+                    "value"
+                ]
+            },
+            "TargetAuthentications": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/TypeEnum"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "logout_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "logged_in_indicator": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "csrf_token_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_form_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "password_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "realm": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "username_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "is_ajax_spider_enabled": {
+                        "type": "boolean"
+                    },
+                    "recorded_login_file": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": [
+                    "id",
+                    "type",
+                    "url"
+                ]
+            },
+            "TargetAuthenticationsRequest": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/TypeEnum"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "logout_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "logged_in_indicator": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "csrf_token_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_form_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "login_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "password_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "realm": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "username_field": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "is_ajax_spider_enabled": {
+                        "type": "boolean"
+                    },
+                    "recorded_login_file": {
+                        "type": "string",
+                        "format": "binary"
+                    },
+                    "additional_parameters": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "cookies": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "headers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TargetAuthenticationGenericJSONFieldRequest"
+                        },
+                        "writeOnly": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1
+                    },
+                    "username": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "type",
+                    "url"
+                ]
+            },
+            "TargetCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 40
+                        }
+                    },
+                    "target_authentication": {
+                        "$ref": "#/components/schemas/TargetAuthenticationsRequest"
+                    }
+                },
+                "required": [
+                    "address"
+                ]
+            },
+            "TargetStatusEnum": {
+                "type": "string",
+                "enum": [
+                    "live",
+                    "license_exceeded",
+                    "unscanned",
+                    "unresponsive",
+                    "agent_uninstalled"
+                ]
+            },
+            "TypeEnum": {
+                "enum": [
+                    "http_header",
+                    "session_cookie",
+                    "http",
+                    "form",
+                    "recorded",
+                    "unauthenticated"
+                ],
+                "type": "string",
+                "description": "* `http_header` - HTTP_HEADER\n* `session_cookie` - SESSION_COOKIE\n* `http` - HTTP\n* `form` - FORM\n* `recorded` - RECORDED\n* `unauthenticated` - UNAUTHENTICATED"
+            }
+        },
+        "securitySchemes": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Value should be formatted: `Bearer <apiKey>`"
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://api.intruder.io"
+        }
+    ]
+}
