@@ -11,6 +11,9 @@ A Claude MCP server for the Intruder API.
 uv pip install -e .
 ```
 
+## Get and Intruder API Key
+See [the docs](https://developers.intruder.io/docs/creating-an-access-token).
+
 ## Claude Configuration
 
 Add this to your Claude config:
