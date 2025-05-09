@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any, Generator
 import httpx
 import os
 import json
-from .types import (
+from .enums import (
     Health, Issue, Occurrence, Licenses, Scan, ScanList, ScanRequest, Target, TargetCreateRequest,
     TargetAuthentications, TargetAuthenticationsRequest, Tags, TagsRequest, APISchemas, APISchemasRequest,
     PatchedAPISchemasRequest, PatchedTargetAuthenticationsRequest, PaginatedIssueList, PaginatedOccurrenceList,
