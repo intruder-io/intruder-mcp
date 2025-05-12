@@ -8,7 +8,7 @@ def main():
     api_key = os.environ.get("INTRUDER_API_KEY")
     if not api_key:
         raise ValueError("INTRUDER_API_KEY environment variable not set")
-    
+
     api = IntruderAPI(api_key)
     mcp = FastMCP("intruder")
     PAGE_SIZE = 100
@@ -18,13 +18,13 @@ def main():
         """Get the current user of the Intruder API that we are authenticated as"""
         health = api.get_health()
         return health.authenticated_as
-    
+
     @mcp.tool()
     async def get_status() -> str:
         """Get the status of the Intruder API"""
         health = api.get_health()
         return health.status
-    
+
     @mcp.tool()
     async def list_targets() -> str:
         """
@@ -34,15 +34,15 @@ def main():
         targets = api.list_targets_all()
         formatted = [f"{target.id} - {target.address} ({target.target_status})" for target in targets]
         return "\n".join(formatted)
-    
+
     @mcp.tool()
-    async def list_issues(target_addresses: Optional[List[str]] = None, 
+    async def list_issues(target_addresses: Optional[List[str]] = None,
                          tag_names: Optional[List[str]] = None,
                          snoozed: Optional[bool] = None,
                          severity: Optional[str] = None) -> str:
         """
         List issues in the Intruder account with optional filters.
-        
+
         Args:
             target_addresses: Filter by target addresses
             tag_names: Filter by tag names
@@ -62,11 +62,11 @@ def main():
     async def list_scans(status: Optional[str] = None, scan_type: Optional[str] = None) -> str:
         """
         List scans in the Intruder account with optional filters.
-        
+
         Args:
-            status: Filter by scan status (in_progress, completed, cancelled, cancelled_no_active_targets, 
+            status: Filter by scan status (in_progress, completed, cancelled, cancelled_no_active_targets,
                    cancelled_no_valid_targets, analysing_results)
-            scan_type: Filter by scan type (assessment_schedule, new_service, cloudbot_new_target, 
+            scan_type: Filter by scan type (assessment_schedule, new_service, cloudbot_new_target,
                      rapid_remediation, advisory, cloud_security)
         """
         scans = api.list_scans_all(status=status, scan_type=scan_type)
@@ -77,7 +77,7 @@ def main():
     async def list_tags(target_address: Optional[str] = None) -> str:
         """
         List all tags in the Intruder account with optional filters.
-        
+
         Args:
             target_address: Filter tags by target address
         """
@@ -89,13 +89,13 @@ def main():
         return "\n".join(sorted(tags))
 
     @mcp.tool()
-    async def list_occurrences(issue_id: int, 
+    async def list_occurrences(issue_id: int,
                              target_addresses: Optional[List[str]] = None,
                              tag_names: Optional[List[str]] = None,
                              snoozed: Optional[bool] = None) -> str:
         """
         List all occurrences for a specific issue with optional filters.
-        
+
         Args:
             issue_id: The ID of the issue to list occurrences for
             target_addresses: Filter by target addresses
@@ -115,7 +115,7 @@ def main():
     async def get_scanner_output(issue_id: int, occurrence_id: int) -> str:
         """
         Get scanner output for a specific occurrence of an issue.
-        
+
         Args:
             issue_id: The ID of the issue
             occurrence_id: The ID of the occurrence
@@ -131,12 +131,12 @@ def main():
             formatted.extend(str(line) for line in output.scanner_output)
             formatted.append("")
         return "\n".join(formatted)
-    
+
     @mcp.tool()
     async def create_scan(target_addresses: Optional[List[str]] = None, tag_names: Optional[List[str]] = None) -> str:
         """
         Create a new scan.
-        
+
         Args:
             target_addresses: List of target addresses to scan
             tag_names: List of tag names to scan targets with these tags
@@ -148,7 +148,7 @@ def main():
     async def get_scan(scan_id: int) -> str:
         """
         Get details of a specific scan.
-        
+
         Args:
             scan_id: The ID of the scan to get
         """
@@ -172,7 +172,7 @@ def main():
     async def cancel_scan(scan_id: int) -> str:
         """
         Cancel a running scan.
-        
+
         Args:
             scan_id: The ID of the scan to cancel
         """
@@ -183,7 +183,7 @@ def main():
     async def delete_target(target_id: str) -> str:
         """
         Delete a target.
-        
+
         Args:
             target_id: The ID of the target to delete
         """
@@ -194,7 +194,7 @@ def main():
     async def create_targets(addresses: List[str]) -> str:
         """
         Create one or more targets.
-        
+
         Args:
             addresses: List of target addresses to create
                     Example: ['example.com'] for a single target
@@ -208,7 +208,7 @@ def main():
     async def create_target_tag(target_id: int, name: str) -> str:
         """
         Add a tag to a target.
-        
+
         Args:
             target_id: The ID of the target to add the tag to
             name: The name of the tag to add (max 40 characters)
@@ -220,7 +220,7 @@ def main():
     async def delete_target_tag(target_id: int, tag_name: str) -> str:
         """
         Remove a tag from a target.
-        
+
         Args:
             target_id: The ID of the target to remove the tag from
             tag_name: The name of the tag to remove
