@@ -50,7 +50,7 @@ class TargetStatusEnum(str, Enum):
     AGENT_UNINSTALLED = "agent_uninstalled"
 
 class LicenseTypeEnum(str, Enum):
-    # Ignore the swagger schema here - it incorrectly defines this as an int
+    # Ignore the swagger file here - it incorrectly defines this as an int
     INFRASTRUCTURE = "infrastructure"
     APPLICATION = "application"
 

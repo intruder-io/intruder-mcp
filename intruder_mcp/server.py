@@ -28,7 +28,7 @@ def main():
     @mcp.tool()
     async def list_targets() -> str:
         """
-        List all targets in the Intruder account and their associated IDs.
+        List all targets in the Intruder account and their associated IDs and status (one of 'live', 'license_exceeded', 'unscanned', 'unresponsive', 'agent_uninstalled').
         """
 
         targets = api.list_targets_all()
@@ -44,10 +44,10 @@ def main():
         List issues in the Intruder account with optional filters.
 
         Args:
-            target_addresses: Filter by target addresses
-            tag_names: Filter by tag names
-            snoozed: Filter by snoozed status
-            severity: Filter by severity level
+            target_addresses: Filter by a list of target addresses
+            tag_names: Filter by a list of tag names
+            snoozed: Filter by snoozed status (true or false)
+            severity: Filter by severity level (one of 'critical', 'high', 'medium', 'low')
         """
         issues = api.list_issues_all(
             target_addresses=target_addresses,
@@ -68,6 +68,14 @@ def main():
                    cancelled_no_valid_targets, analysing_results)
             scan_type: Filter by scan type (assessment_schedule, new_service, cloudbot_new_target,
                      rapid_remediation, advisory, cloud_security)
+        
+        The scan_type parameters mean:
+            - assessment_schedule: Scans that run on a regular schedule
+            - new_service: Scans that are triggered when a new service is exposed on a target
+            - cloudbot_new_target: Scans that are triggered when CloudBot discovers a new target in a connected cloud account
+            - rapid_remediation: Scans that a user can trigger to test if a specific issue has been remediated
+            - advisory: An issue created by the Intruder security team based on their manual work
+            - cloud_security: Scans of cloud accounts, checking the configuration of the resources in the cloud account
         """
         scans = api.list_scans_all(status=status, scan_type=scan_type)
         formatted = [f"{scan.id} - {scan.scan_type} ({scan.status})" for scan in scans]
@@ -76,10 +84,10 @@ def main():
     @mcp.tool()
     async def list_tags(target_address: Optional[str] = None) -> str:
         """
-        List all tags in the Intruder account with optional filters.
+        List all tags in the Intruder account with optional filters. Tags are applied to targets.
 
         Args:
-            target_address: Filter tags by target address
+            target_address: Filter by a list of target address
         """
         targets = api.list_targets_all(address=target_address)
         tags = set()
@@ -98,9 +106,9 @@ def main():
 
         Args:
             issue_id: The ID of the issue to list occurrences for
-            target_addresses: Filter by target addresses
-            tag_names: Filter by tag names
-            snoozed: Filter by snoozed status
+            target_addresses: Filter by a list of target addresses
+            tag_names: Filter by a list of tag names
+            snoozed: Filter by snoozed status (true or false)
         """
         occurrences = api.get_issue_occurrences_all(
             issue_id=issue_id,
@@ -157,7 +165,8 @@ def main():
             f"Scan {scan.id} ({scan.scan_type})",
             f"Status: {scan.status}",
             f"Schedule: {scan.schedule_period}",
-            f"Created: {scan.created_at}"
+            f"Created: {scan.created_at}",
+            f"Type: {scan.scan_type}"
         ]
         if scan.start_time:
             details.append(f"Started: {scan.start_time}")
@@ -166,6 +175,7 @@ def main():
         if scan.target_addresses:
             details.append("\nTargets:")
             details.extend(f"- {addr}" for addr in scan.target_addresses)
+
         return "\n".join(details)
 
     @mcp.tool()
@@ -231,8 +241,7 @@ def main():
     @mcp.tool()
     async def list_licenses() -> str:
         """
-        List license information for the Intruder account.
-        Shows usage and limits for infrastructure and application licenses.
+        List license information for the Intruder account. Shows usage and limits for infrastructure and application licenses. When a license is used, it is tied to the target that used it for 30 days.
         """
         licenses = api.list_licenses_all()
         formatted = []
