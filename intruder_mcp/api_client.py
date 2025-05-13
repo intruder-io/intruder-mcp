@@ -13,7 +13,10 @@ from .enums import (
 class IntruderAPI:
     def __init__(self, api_key: str):
         self.base_url = "https://api.intruder.io/v1"
-        self.headers = {"Authorization": f"Bearer {api_key}"}
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "User-Agent": "Intruder-MCP/1.0"
+        }
         self.client = httpx.Client(headers=self.headers)
 
     def get_health(self) -> Health:
