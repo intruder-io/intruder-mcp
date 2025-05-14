@@ -2,4 +2,13 @@ version: 1
 startCommand:
   command: ["python", "server.py"]
   type: stdio
-  configSchema: {} 
+  configSchema:
+    type: object
+    required: ["INTRUDER_API_KEY"]
+    properties:
+      INTRUDER_API_KEY:
+        type: string
+        title: "Intruder API Key"
+        description: "Your Intruder API key for authentication."
+  env:
+    INTRUDER_API_KEY: "${config.INTRUDER_API_KEY}" 
