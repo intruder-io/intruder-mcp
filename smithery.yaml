@@ -1,6 +1,5 @@
 version: 1
 startCommand:
-  command: ["python", "server.py"]
   type: stdio
   configSchema:
     type: object
@@ -10,5 +9,9 @@ startCommand:
         type: string
         title: "Intruder API Key"
         description: "Your Intruder API key for authentication."
-  env:
-    INTRUDER_API_KEY: "${config.INTRUDER_API_KEY}" 
+  commandFunction: |-
+    (config) => ({
+      command: "python",
+      args: ["intruder_mcp/server.py"],
+      env: { INTRUDER_API_KEY: config.INTRUDER_API_KEY }
+    }) 
