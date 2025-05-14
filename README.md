@@ -26,8 +26,6 @@ uv pip install -e .
 docker image build --tag mcp/intruder .
 ```
 
-TODO: The Dockerfile can be improved based on the [UV recommendations](https://docs.astral.sh/uv/guides/integration/docker/#developing-in-a-container).
-
 ## Get and Intruder API Key
 
 See [the docs](https://developers.intruder.io/docs/creating-an-access-token).
