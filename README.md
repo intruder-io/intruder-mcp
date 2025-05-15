@@ -1,48 +1,27 @@
 # Intruder MCP
 
-A Model Controller Protocol (MCP) server for the Intruder API.
+Let MCP clients like Claude and Cursor control [Intruder](https://www.intruder.io/).
 
 ## Installation
+There are three ways to use the MCP server:
+- Through [smithery](https://smithery.ai/server/@intruder-io/intruder-mcp)
+- Locally on your machine with Python
+- In a Docker container
 
-The MCP server is a Python application that can be run locally or in a container.
+All of these methods require you to provide an Intruder API key. To generate a key, see [the documentation](https://developers.intruder.io/docs/creating-an-access-token).
+
+### Smithery
+Follow the instructions on [smithery](https://smithery.ai/server/@intruder-io/intruder-mcp).
 
 ### Running Locally
-
-* Install [uv](https://github.com/astral-sh/uv)
-* Clone this repository
-* Install dependencies:
+Install [uv](https://github.com/astral-sh/uv) if it isn't already present, and then clone this repository and run the following from the root directory:
 
 ```bash
 uv venv
-source .venv/bin/activate
 uv pip install -e .
 ```
 
-### Running in a Container
-
-* Build the container used by the MCP client. Client configuration is explained in the next section.
-
-```bash
-docker image build --tag mcp/intruder .
-```
-
-## Get and Intruder API Key
-
-See [the docs](https://developers.intruder.io/docs/creating-an-access-token).
-
-## MCP client configuration
-
-The MCP client is a tool that allows you to interact with the MCP server. It is a CLI tool that is used to send messages to the MCP server. Available clients are:
-
-* [Claude](https://docs.anthropic.com/en/docs/mcp/claude)
-* [Docker Toolkit](https://docs.docker.com/ai/mcp-catalog-and-toolkit/toolkit/) and [MCP Program](https://www.docker.com/products/mcp-catalog-and-toolkit/)
-* [Cursor](https://docs.cursor.com/context/model-context-protocol)
-
-Clients are configured in the `mcp.json` file. Each client file is in a different local directory. The structure has a principal block with a list of clients called `mcpServers`.
-
-Each client has a `command` and `args` field. The `command` is the command to run the client. The `args` is an array of arguments to pass to the command. The `command` field can use local processes or containers.
-
-* Local process:
+Then, add the following to your MCP client configuration, making sure to fill in your API key, and update the path to where you have cloned this repository:
 
 ```json
 {
@@ -63,7 +42,15 @@ Each client has a `command` and `args` field. The `command` is the command to ru
 }
 ```
 
-* Container:
+
+### Running in a Container
+Clone this repository, and build the container by running the following command from the root directory of the repository:
+
+```bash
+docker image build --tag mcp/intruder .
+```
+
+Then, add the following to your MCP client configuration, making sure to fill in your API key:
 
 ```json
 {
