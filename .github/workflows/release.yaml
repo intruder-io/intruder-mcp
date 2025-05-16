@@ -51,6 +51,7 @@ jobs:
           file: ./Dockerfile
           tags: |
             ghcr.io/intruder-io/${{ env.IMAGE_NAME }}:${{ steps.prep.outputs.VERSION }}
+            ghcr.io/intruder-io/${{ env.IMAGE_NAME }}:latest
       - name: Download release notes utility
         env:
           GH_REL_URL: https://github.com/buchanae/github-release-notes/releases/download/0.2.0/github-release-notes-linux-amd64-0.2.0.tar.gz

@@ -59,7 +59,7 @@ Add the following to your MCP client configuration, making sure to fill in your 
         "--init",
         "--env",
         "INTRUDER_API_KEY=<your-api-key>",
-        "ghcr.io/intruder-io/intruder-mcp:v0.1.0"
+        "ghcr.io/intruder-io/intruder-mcp"
       ]
     }
   }
