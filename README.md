@@ -42,15 +42,9 @@ Then, add the following to your MCP client configuration, making sure to fill in
 }
 ```
 
-
 ### Running in a Container
-Clone this repository, and build the container by running the following command from the root directory of the repository:
 
-```bash
-docker image build --tag mcp/intruder .
-```
-
-Then, add the following to your MCP client configuration, making sure to fill in your API key:
+Add the following to your MCP client configuration, making sure to fill in your API key:
 
 ```json
 {
@@ -65,7 +59,7 @@ Then, add the following to your MCP client configuration, making sure to fill in
         "--init",
         "--env",
         "INTRUDER_API_KEY=<your-api-key>",
-        "mcp/intruder"
+        "ghcr.io/intruder-io/intruder-mcp"
       ]
     }
   }

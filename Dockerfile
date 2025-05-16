@@ -1,6 +1,9 @@
 # Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+# Set the source URL for the image
+LABEL org.opencontainers.image.source="https://github.com/intruder-io/intruder-mcp"
+
 # Copy the project into the image
 ADD . /app
 
