@@ -1,6 +1,6 @@
 # Intruder MCP
 
-Let MCP clients like Claude and Cursor control [Intruder](https://www.intruder.io/).
+Let MCP clients like Claude and Cursor control [Intruder](https://www.intruder.io/). For more information and sample use cases, please see [our blog post](https://www.intruder.io/blog/claude-intruder-mcp#intruder-mcp-use-cases).
 
 ## Installation
 There are three ways to use the MCP server:
