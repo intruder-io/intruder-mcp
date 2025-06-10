@@ -168,6 +168,107 @@
                 }
             }
         },
+        "/v1/issues/{id}/snooze/": {
+            "post": {
+                "operationId": "issues_snooze_create",
+                "description": "Snooze an issue and all its current and future occurrences.",
+                "summary": "Snooze an issue and all its current and future occurrences.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SnoozeIssueRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "message": "Issue was snoozed."
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while snoozing issue."
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/v1/issues/{issue_id}/occurrences/": {
             "get": {
                 "operationId": "issues_occurrences_list",
@@ -281,6 +382,116 @@
                                 "schema": {
                                     "example": {
                                         "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/v1/issues/{issue_id}/occurrences/{id}/snooze/": {
+            "post": {
+                "operationId": "issues_occurrences_snooze_create",
+                "description": "Snooze specific occurrence.",
+                "summary": "Snooze specific occurrence.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "issue_id",
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^[0-9]+$"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SnoozeOccurrenceRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "message": "Occurrence was snoozed."
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Validation errors"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Access token is missing or invalid"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "detail": "Not found"
+                                    }
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "example": {
+                                        "non_field_errors": [
+                                            "Something went wrong while snoozing occurrence."
+                                        ]
                                     }
                                 }
                             }
@@ -981,7 +1192,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Target deleted successfully"
+                        "description": "No response body"
                     },
                     "401": {
                         "content": {
@@ -1765,8 +1976,15 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Authentication deleted successfully"
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TargetAuthentications"
+                                }
+                            }
+                        },
+                        "description": ""
                     },
                     "401": {
                         "content": {
@@ -1943,7 +2161,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Tag deleted from target successfully"
+                        "description": "No response body"
                     },
                     "400": {
                         "content": {
@@ -2142,6 +2360,16 @@
                     "name"
                 ]
             },
+            "DurationTypeEnum": {
+                "enum": [
+                    "forever",
+                    "day",
+                    "week",
+                    "month"
+                ],
+                "type": "string",
+                "description": "* `forever` - FOREVER\n* `day` - DAY\n* `week` - WEEK\n* `month` - MONTH"
+            },
             "ExploitLikelihoodEnum": {
                 "type": "string",
                 "enum": [
@@ -2201,8 +2429,12 @@
                         "type": "boolean"
                     },
                     "snooze_reason": {
-                        "type": "string",
-                        "readOnly": true
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/IssueSnoozeReasonEnum"
+                            }
+                        ],
+                        "nullable": true
                     },
                     "snooze_until": {
                         "type": "string",
@@ -2243,13 +2475,21 @@
                     "title"
                 ]
             },
-            "LicenseTypeEnum": {
+            "IssueSnoozeReasonEnum": {
+                "type": "string",
                 "enum": [
-                    0,
-                    1
+                    "ACCEPT_RISK",
+                    "FALSE_POSITIVE",
+                    "MITIGATING_CONTROLS"
                 ],
-                "type": "integer",
-                "description": "* `0` - INFRASTRUCTURE\n* `1` - AUTHENTICATION"
+                "description": "* `ACCEPT_RISK` - Risk accepted for the issue and all of its occurrences\n* `FALSE_POSITIVE` - False positive - issue and all occurrences have been verified as not exploitable\n* `MITIGATING_CONTROLS` - Mitigating controls are in place"
+            },
+            "LicenseTypeEnum": {
+                "type": "string",
+                "enum": [
+                    "infrastructure",
+                    "application"
+                ]
             },
             "Licenses": {
                 "type": "object",
@@ -2298,7 +2538,7 @@
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "readOnly": true
+                        "description": "ID of this occurrence instance in the current issue. This ID may change between scans if the same vulnerability is re-detected."
                     },
                     "target": {
                         "type": "string"
@@ -2324,7 +2564,12 @@
                         "type": "boolean"
                     },
                     "snooze_reason": {
-                        "type": "string"
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OccurrencesSnoozeReasonEnum"
+                            }
+                        ],
+                        "nullable": true
                     },
                     "snooze_until": {
                         "type": "string",
@@ -2345,6 +2590,10 @@
                         "type": "number",
                         "format": "float",
                         "readOnly": true
+                    },
+                    "occurrence_id": {
+                        "type": "integer",
+                        "description": "Stable ID that persists across scans. Use this ID to track the same vulnerability instance across different scans."
                     }
                 },
                 "required": [
@@ -2353,6 +2602,7 @@
                     "exploit_likelihood",
                     "extra_info",
                     "id",
+                    "occurrence_id",
                     "port",
                     "protocol",
                     "snooze_reason",
@@ -2360,6 +2610,15 @@
                     "snoozed",
                     "target"
                 ]
+            },
+            "OccurrencesSnoozeReasonEnum": {
+                "type": "string",
+                "enum": [
+                    "ACCEPT_RISK",
+                    "FALSE_POSITIVE",
+                    "MITIGATING_CONTROLS"
+                ],
+                "description": "* `ACCEPT_RISK` - Risk accepted for this specific occurrence\n* `FALSE_POSITIVE` - False positive - occurrence has been verified as not exploitable\n* `MITIGATING_CONTROLS` - Mitigating controls are in place for this occurrence"
             },
             "PaginatedIssueList": {
                 "type": "object",
@@ -2927,6 +3186,72 @@
                     "weekly",
                     "quarterly"
                 ]
+            },
+            "SnoozeIssueRequest": {
+                "type": "object",
+                "properties": {
+                    "details": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "duration_type": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/DurationTypeEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "reason": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/IssueSnoozeReasonEnum"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            "SnoozeOccurrenceRequest": {
+                "type": "object",
+                "properties": {
+                    "details": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "duration_type": {
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/DurationTypeEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
+                    },
+                    "reason": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OccurrencesSnoozeReasonEnum"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                }
             },
             "StatusEnum": {
                 "enum": [
