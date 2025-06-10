@@ -259,6 +259,47 @@ def main():
             formatted.append("")
         return "\n".join(formatted)
 
+    @mcp.tool()
+    async def snooze_issue(issue_id: int, reason: str, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> str:
+        """
+        Snooze an issue and all its current and future occurrences.
+
+        Args:
+            issue_id: The ID of the issue to snooze
+            reason: Reason for snoozing (required, must one of ACCEPT_RISK, FALSE_POSITIVE, MITIGATING_CONTROLS)
+            details: Optional details for the snooze
+            duration: Optional duration for the snooze (in seconds)
+            duration_type: Optional duration type (e.g., 'days', 'hours')
+            
+        The reasons mean:
+            - ACCEPT_RISK - Risk accepted for the issue and all of its occurrences
+            - FALSE_POSITIVE - False positive - issue and all occurrences have been verified as not exploitable
+            - MITIGATING_CONTROLS - Mitigating controls are in place
+        """
+        result = api.snooze_issue(issue_id, reason=reason, details=details, duration=duration, duration_type=duration_type)
+        return result.get("message", str(result))
+
+    @mcp.tool()
+    async def snooze_occurrence(issue_id: int, occurrence_id: int, reason: str, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> str:
+        """
+        Snooze a specific occurrence of an issue.
+
+        Args:
+            issue_id: The ID of the issue
+            occurrence_id: The ID of the occurrence to snooze
+            reason: Reason for snoozing (required, must be one of ACCEPT_RISK, FALSE_POSITIVE, MITIGATING_CONTROLS)
+            details: Optional details for the snooze
+            duration: Optional duration for the snooze (in seconds)
+            duration_type: Optional duration type (e.g., 'days', 'hours')
+            
+        The reasons mean:
+            - ACCEPT_RISK - Risk accepted for the issue and all of its occurrences
+            - FALSE_POSITIVE - False positive - issue and all occurrences have been verified as not exploitable
+            - MITIGATING_CONTROLS - Mitigating controls are in place
+        """
+        result = api.snooze_occurrence(issue_id, occurrence_id, reason=reason, details=details, duration=duration, duration_type=duration_type)
+        return result.get("message", str(result))
+
     mcp.run(transport="stdio")
 
 if __name__ == "__main__":

@@ -7,7 +7,8 @@ from .enums import (
     TargetAuthentications, TargetAuthenticationsRequest, Tags, TagsRequest, APISchemas, APISchemasRequest,
     PatchedAPISchemasRequest, PatchedTargetAuthenticationsRequest, PaginatedIssueList, PaginatedOccurrenceList,
     PaginatedScanListList, PaginatedScannerOutputListList, PaginatedTagsList, PaginatedTargetAuthenticationsList,
-    PaginatedTargetList, PaginatedLicensesList, ScannerOutputList
+    PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeIssueRequest, SnoozeOccurrenceRequest,
+    IssueSnoozeReasonEnum, OccurrencesSnoozeReasonEnum
 )
 
 class IntruderAPI:
@@ -285,4 +286,12 @@ class IntruderAPI:
         return Tags(**self.client.post(f"{self.base_url}/targets/{target_id}/tags/", json=data.dict()).json())
 
     def delete_target_tag(self, target_id: int, tag_name: str) -> None:
-        self.client.delete(f"{self.base_url}/targets/{target_id}/tags/{tag_name}/") 
+        self.client.delete(f"{self.base_url}/targets/{target_id}/tags/{tag_name}/")
+
+    def snooze_issue(self, issue_id: int, reason: IssueSnoozeReasonEnum, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> dict:
+        data = SnoozeIssueRequest(details=details, duration=duration, duration_type=duration_type, reason=reason)
+        return self.client.post(f"{self.base_url}/issues/{issue_id}/snooze/", json=data.dict(exclude_none=True)).json()
+
+    def snooze_occurrence(self, issue_id: int, occurrence_id: int, reason: OccurrencesSnoozeReasonEnum, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> dict:
+        data = SnoozeOccurrenceRequest(details=details, duration=duration, duration_type=duration_type, reason=reason)
+        return self.client.post(f"{self.base_url}/issues/{issue_id}/occurrences/{occurrence_id}/snooze/", json=data.dict(exclude_none=True)).json() 
