@@ -3,15 +3,11 @@
 Let MCP clients like Claude and Cursor control [Intruder](https://www.intruder.io/). For more information and sample use cases, please see [our blog post](https://www.intruder.io/blog/claude-intruder-mcp#intruder-mcp-use-cases).
 
 ## Installation
-There are three ways to use the MCP server:
-- Through [smithery](https://smithery.ai/server/@intruder-io/intruder-mcp)
+There are two ways to use the MCP server:
 - Locally on your machine with Python
 - In a Docker container
 
 All of these methods require you to provide an Intruder API key. To generate a key, see [the documentation](https://developers.intruder.io/docs/creating-an-access-token).
-
-### Smithery
-Follow the instructions on [smithery](https://smithery.ai/server/@intruder-io/intruder-mcp).
 
 ### Running Locally
 Install [uv](https://github.com/astral-sh/uv) if it isn't already present, and then clone this repository and run the following from the root directory:
