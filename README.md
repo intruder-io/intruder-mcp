@@ -61,3 +61,7 @@ Add the following to your MCP client configuration, making sure to fill in your 
   }
 }
 ```
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/intruder-io-intruder-mcp).
+
