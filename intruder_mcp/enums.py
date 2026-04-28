@@ -34,6 +34,12 @@ class SchedulePeriodEnum(str, Enum):
     WEEKLY = "weekly"
     QUARTERLY = "quarterly"
 
+class ScanFrequencyEnum(str, Enum):
+    MONTHLY = "monthly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    QUARTERLY = "quarterly"
+
 class TypeEnum(str, Enum):
     HTTP_HEADER = "http_header"
     SESSION_COOKIE = "session_cookie"
@@ -264,6 +270,50 @@ class OccurrencesSnoozeReasonEnum(str, Enum):
     ACCEPT_RISK = "ACCEPT_RISK"
     FALSE_POSITIVE = "FALSE_POSITIVE"
     MITIGATING_CONTROLS = "MITIGATING_CONTROLS"
+
+class AssessmentScheduleList(BaseModel):
+    id: int
+    name: str
+    schedule_period: SchedulePeriodEnum
+    first_scan_time: datetime
+    next_scan_date: datetime
+    status: str
+    throttled: bool
+    web_ports_only: bool
+    latest_scan_id: Optional[int] = None
+    latest_scan_status: Optional[str] = None
+    last_scan_start_time: Optional[datetime] = None
+    last_scan_end_time: Optional[datetime] = None
+    targets: List[int] = []
+    target_tags: List[str] = []
+    upload_to_drata: bool
+    upload_to_vanta: bool
+
+class AssessmentScheduleListResponse(BaseModel):
+    count: int
+    results: List[AssessmentScheduleList]
+
+class AssessmentScheduleCreateUpdateRequest(BaseModel):
+    name: str = Field(..., min_length=1)
+    first_scan_time: datetime
+    scan_frequency: ScanFrequencyEnum
+    tags: Optional[List[str]] = None
+    targets: Optional[List[int]] = None
+    throttled: Optional[bool] = None
+    web_ports_only: Optional[bool] = None
+    upload_to_drata: Optional[bool] = None
+    upload_to_vanta: Optional[bool] = None
+
+class PatchedAssessmentScheduleCreateUpdateRequest(BaseModel):
+    name: Optional[str] = Field(None, min_length=1)
+    first_scan_time: Optional[datetime] = None
+    scan_frequency: Optional[ScanFrequencyEnum] = None
+    tags: Optional[List[str]] = None
+    targets: Optional[List[int]] = None
+    throttled: Optional[bool] = None
+    web_ports_only: Optional[bool] = None
+    upload_to_drata: Optional[bool] = None
+    upload_to_vanta: Optional[bool] = None
 
 class SnoozeIssueRequest(BaseModel):
     details: Optional[str] = None

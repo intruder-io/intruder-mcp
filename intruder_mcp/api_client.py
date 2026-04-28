@@ -2,13 +2,15 @@ from typing import List, Optional, Dict, Any, Generator
 import httpx
 import os
 import json
+from datetime import datetime
 from .enums import (
     Health, Issue, Occurrence, Licenses, Scan, ScanList, ScanRequest, Target, TargetCreateRequest,
     TargetAuthentications, TargetAuthenticationsRequest, Tags, TagsRequest, APISchemas, APISchemasRequest,
     PatchedAPISchemasRequest, PatchedTargetAuthenticationsRequest, PaginatedIssueList, PaginatedOccurrenceList,
     PaginatedScanListList, PaginatedScannerOutputListList, PaginatedTagsList, PaginatedTargetAuthenticationsList,
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeIssueRequest, SnoozeOccurrenceRequest,
-    IssueSnoozeReasonEnum, OccurrencesSnoozeReasonEnum
+    IssueSnoozeReasonEnum, OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
+    AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum
 )
 
 class IntruderAPI:
@@ -287,6 +289,38 @@ class IntruderAPI:
 
     def delete_target_tag(self, target_id: int, tag_name: str) -> None:
         self.client.delete(f"{self.base_url}/targets/{target_id}/tags/{tag_name}/")
+
+    def list_scan_schedules(self) -> AssessmentScheduleListResponse:
+        return AssessmentScheduleListResponse(**self.client.get(f"{self.base_url}/scans/schedules/").json())
+
+    def create_scan_schedule(self, name: str, first_scan_time: datetime, scan_frequency: ScanFrequencyEnum,
+                            tags: Optional[List[str]] = None, targets: Optional[List[int]] = None,
+                            throttled: Optional[bool] = None, web_ports_only: Optional[bool] = None,
+                            upload_to_drata: Optional[bool] = None, upload_to_vanta: Optional[bool] = None) -> dict:
+        data = AssessmentScheduleCreateUpdateRequest(
+            name=name, first_scan_time=first_scan_time, scan_frequency=scan_frequency,
+            tags=tags, targets=targets, throttled=throttled, web_ports_only=web_ports_only,
+            upload_to_drata=upload_to_drata, upload_to_vanta=upload_to_vanta,
+        )
+        return self.client.post(f"{self.base_url}/scans/schedules/",
+                                json=data.model_dump(mode="json", exclude_none=True)).json()
+
+    def update_scan_schedule(self, schedule_id: int, name: Optional[str] = None,
+                            first_scan_time: Optional[datetime] = None,
+                            scan_frequency: Optional[ScanFrequencyEnum] = None,
+                            tags: Optional[List[str]] = None, targets: Optional[List[int]] = None,
+                            throttled: Optional[bool] = None, web_ports_only: Optional[bool] = None,
+                            upload_to_drata: Optional[bool] = None, upload_to_vanta: Optional[bool] = None) -> dict:
+        data = PatchedAssessmentScheduleCreateUpdateRequest(
+            name=name, first_scan_time=first_scan_time, scan_frequency=scan_frequency,
+            tags=tags, targets=targets, throttled=throttled, web_ports_only=web_ports_only,
+            upload_to_drata=upload_to_drata, upload_to_vanta=upload_to_vanta,
+        )
+        return self.client.patch(f"{self.base_url}/scans/schedules/{schedule_id}/",
+                                 json=data.model_dump(mode="json", exclude_none=True)).json()
+
+    def delete_scan_schedule(self, schedule_id: int) -> None:
+        self.client.delete(f"{self.base_url}/scans/schedules/{schedule_id}/")
 
     def snooze_issue(self, issue_id: int, reason: IssueSnoozeReasonEnum, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> dict:
         data = SnoozeIssueRequest(details=details, duration=duration, duration_type=duration_type, reason=reason)
