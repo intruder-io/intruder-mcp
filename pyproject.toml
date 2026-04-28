@@ -3,9 +3,9 @@ name = "intruder-mcp"
 version = "0.1.0"
 description = "MCP server for Intruder API"
 dependencies = [
-    "mcp>=0.1.0",
-    "httpx>=0.24.0",
-    "pydantic>=2.0.0",
+    "mcp>=1.27.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.13.3",
 ]
 
 [project.scripts]
