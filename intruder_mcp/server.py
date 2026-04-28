@@ -1,8 +1,14 @@
 import os
 import sys
+from datetime import datetime
 from typing import Any, Optional, List, Dict
 from mcp.server.fastmcp import FastMCP
 from intruder_mcp.api_client import IntruderAPI
+from intruder_mcp.enums import ScanFrequencyEnum
+
+
+def _parse_iso8601(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
 def main():
@@ -299,6 +305,135 @@ def main():
         """
         result = api.snooze_occurrence(issue_id, occurrence_id, reason=reason, details=details, duration=duration, duration_type=duration_type)
         return result.get("message", str(result))
+
+    @mcp.tool()
+    async def list_scan_schedules() -> str:
+        """
+        List all scan schedules in the Intruder account, including the full record for each.
+        """
+        response = api.list_scan_schedules()
+        if not response.results:
+            return "No scan schedules found."
+        blocks = []
+        for s in response.results:
+            block = [
+                f"{s.id} - {s.name}",
+                f"  schedule_period: {s.schedule_period}",
+                f"  status: {s.status}",
+                f"  first_scan_time: {s.first_scan_time}",
+                f"  next_scan_date: {s.next_scan_date}",
+                f"  throttled: {s.throttled}",
+                f"  web_ports_only: {s.web_ports_only}",
+                f"  upload_to_drata: {s.upload_to_drata}",
+                f"  upload_to_vanta: {s.upload_to_vanta}",
+                f"  latest_scan_id: {s.latest_scan_id}",
+                f"  latest_scan_status: {s.latest_scan_status}",
+                f"  last_scan_start_time: {s.last_scan_start_time}",
+                f"  last_scan_end_time: {s.last_scan_end_time}",
+                f"  targets: {', '.join(map(str, s.targets)) if s.targets else '(none)'}",
+                f"  target_tags: {', '.join(s.target_tags) if s.target_tags else '(none)'}",
+            ]
+            blocks.append("\n".join(block))
+        return "\n\n".join(blocks)
+
+    def _format_schedule_result(action: str, schedule_id: Optional[int], result: dict) -> str:
+        notice = result.get("notice", "OK")
+        return f"{action} scan schedule {schedule_id}: {notice}"
+
+    @mcp.tool()
+    async def create_scan_schedule(
+        name: str,
+        first_scan_time: str,
+        scan_frequency: ScanFrequencyEnum,
+        target_ids: Optional[List[int]] = None,
+        tag_names: Optional[List[str]] = None,
+        throttled: Optional[bool] = None,
+        web_ports_only: Optional[bool] = None,
+        upload_to_drata: Optional[bool] = None,
+        upload_to_vanta: Optional[bool] = None,
+    ) -> str:
+        """
+        Create a recurring scan schedule.
+
+        Args:
+            name: Name of the schedule
+            first_scan_time: ISO 8601 timestamp of the first scan. Must be in the future and on the hour
+                (e.g. '2026-05-01T03:00:00Z', not '2026-05-01T03:12:34Z')
+            scan_frequency: One of 'daily', 'weekly', 'monthly', 'quarterly'
+            target_ids: List of target IDs to include in the schedule
+            tag_names: List of target tag names to include in the schedule
+            throttled: Whether to throttle the scan
+            web_ports_only: Only scan standard web ports
+            upload_to_drata: Upload scan results to Drata
+            upload_to_vanta: Upload scan results to Vanta
+        """
+        parsed_first_scan_time = _parse_iso8601(first_scan_time)
+        result = api.create_scan_schedule(
+            name=name,
+            first_scan_time=parsed_first_scan_time,
+            scan_frequency=scan_frequency,
+            tags=tag_names,
+            targets=target_ids,
+            throttled=throttled,
+            web_ports_only=web_ports_only,
+            upload_to_drata=upload_to_drata,
+            upload_to_vanta=upload_to_vanta,
+        )
+        return _format_schedule_result("Created", result.get("id"), result)
+
+    @mcp.tool()
+    async def update_scan_schedule(
+        schedule_id: int,
+        name: Optional[str] = None,
+        first_scan_time: Optional[str] = None,
+        scan_frequency: Optional[ScanFrequencyEnum] = None,
+        target_ids: Optional[List[int]] = None,
+        tag_names: Optional[List[str]] = None,
+        throttled: Optional[bool] = None,
+        web_ports_only: Optional[bool] = None,
+        upload_to_drata: Optional[bool] = None,
+        upload_to_vanta: Optional[bool] = None,
+    ) -> str:
+        """
+        Update an existing scan schedule. Only the provided fields are changed.
+
+        Args:
+            schedule_id: The ID of the scan schedule to update
+            name: Rename the schedule
+            first_scan_time: ISO 8601 timestamp, in the future and on the hour
+            scan_frequency: One of 'daily', 'weekly', 'monthly', 'quarterly'
+            target_ids: Replace the set of target IDs included in the schedule
+            tag_names: Replace the set of target tag names included in the schedule
+            throttled: Whether to throttle the scan
+            web_ports_only: Only scan standard web ports
+            upload_to_drata: Upload scan results to Drata
+            upload_to_vanta: Upload scan results to Vanta
+        """
+        parsed_first_scan_time = _parse_iso8601(first_scan_time) if first_scan_time is not None else None
+        result = api.update_scan_schedule(
+            schedule_id=schedule_id,
+            name=name,
+            first_scan_time=parsed_first_scan_time,
+            scan_frequency=scan_frequency,
+            tags=tag_names,
+            targets=target_ids,
+            throttled=throttled,
+            web_ports_only=web_ports_only,
+            upload_to_drata=upload_to_drata,
+            upload_to_vanta=upload_to_vanta,
+        )
+        return _format_schedule_result("Updated", schedule_id, result)
+
+    @mcp.tool()
+    async def delete_scan_schedule(schedule_id: int) -> str:
+        """
+        Delete a scan schedule.
+
+        Args:
+            schedule_id: The ID of the scan schedule to delete
+        """
+        api.delete_scan_schedule(schedule_id)
+        return f"Deleted scan schedule {schedule_id}"
 
     mcp.run(transport="stdio")
 
