@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/intruder-io-intruder-mcp-badge.png)](https://mseep.ai/app/intruder-io-intruder-mcp)
+
 # Intruder MCP
 
 Let MCP clients like Claude and Cursor control [Intruder](https://www.intruder.io/). For more information and sample use cases, please see [our blog post](https://www.intruder.io/blog/claude-intruder-mcp#intruder-mcp-use-cases).
