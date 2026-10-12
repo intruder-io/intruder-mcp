@@ -8,10 +8,23 @@ from .enums import (
     TargetAuthentications, TargetAuthenticationsRequest, Tags, TagsRequest, APISchemas, APISchemasRequest,
     PatchedAPISchemasRequest, PatchedTargetAuthenticationsRequest, PaginatedIssueList, PaginatedOccurrenceList,
     PaginatedScanListList, PaginatedScannerOutputListList, PaginatedTagsList, PaginatedTargetAuthenticationsList,
-    PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeIssueRequest, SnoozeOccurrenceRequest,
-    IssueSnoozeReasonEnum, OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
+    PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
+    OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum
 )
+
+
+def _raise_on_error(response: httpx.Response) -> None:
+    # Surface HTTP errors instead of a JSON decode error on HTML error pages,
+    # and include the API's JSON error body so callers see why it failed.
+    if not response.is_error:
+        return
+    response.read()  # body isn't read yet when a response hook runs in httpx 0.28
+    message = f"{response.status_code} {response.reason_phrase}"
+    if response.headers.get("content-type", "").startswith("application/json"):
+        message += f": {response.text[:500]}"
+    raise httpx.HTTPStatusError(message, request=response.request, response=response)
+
 
 class IntruderAPI:
     def __init__(self, api_key: str):
@@ -20,7 +33,10 @@ class IntruderAPI:
             "Authorization": f"Bearer {api_key}",
             "User-Agent": "Intruder-MCP/1.0"
         }
-        self.client = httpx.Client(headers=self.headers)
+        self.client = httpx.Client(
+            headers=self.headers,
+            event_hooks={"response": [_raise_on_error]},
+        )
 
     def get_health(self) -> Health:
         return Health(**self.client.get(f"{self.base_url}/health/").json())
@@ -322,10 +338,6 @@ class IntruderAPI:
     def delete_scan_schedule(self, schedule_id: int) -> None:
         self.client.delete(f"{self.base_url}/scans/schedules/{schedule_id}/")
 
-    def snooze_issue(self, issue_id: int, reason: IssueSnoozeReasonEnum, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> dict:
-        data = SnoozeIssueRequest(details=details, duration=duration, duration_type=duration_type, reason=reason)
-        return self.client.post(f"{self.base_url}/issues/{issue_id}/snooze/", json=data.dict(exclude_none=True)).json()
-
     def snooze_occurrence(self, issue_id: int, occurrence_id: int, reason: OccurrencesSnoozeReasonEnum, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> dict:
         data = SnoozeOccurrenceRequest(details=details, duration=duration, duration_type=duration_type, reason=reason)
-        return self.client.post(f"{self.base_url}/issues/{issue_id}/occurrences/{occurrence_id}/snooze/", json=data.dict(exclude_none=True)).json() 
+        return self.client.post(f"{self.base_url}/issues/{issue_id}/occurrences/{occurrence_id}/snooze/", json=data.dict(exclude_none=True)).json()

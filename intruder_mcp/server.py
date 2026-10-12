@@ -266,45 +266,27 @@ def main():
         return "\n".join(formatted)
 
     @mcp.tool()
-    async def snooze_issue(issue_id: int, reason: str, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> str:
-        """
-        Snooze an issue and all its current and future occurrences.
-
-        Args:
-            issue_id: The ID of the issue to snooze
-            reason: Reason for snoozing (required, must one of ACCEPT_RISK, FALSE_POSITIVE, MITIGATING_CONTROLS)
-            details: Optional details for the snooze
-            duration: Optional duration for the snooze (in seconds)
-            duration_type: Optional duration type (e.g., 'days', 'hours')
-            
-        The reasons mean:
-            - ACCEPT_RISK - Risk accepted for the issue and all of its occurrences
-            - FALSE_POSITIVE - False positive - issue and all occurrences have been verified as not exploitable
-            - MITIGATING_CONTROLS - Mitigating controls are in place
-        """
-        result = api.snooze_issue(issue_id, reason=reason, details=details, duration=duration, duration_type=duration_type)
-        return result.get("message", str(result))
-
-    @mcp.tool()
     async def snooze_occurrence(issue_id: int, occurrence_id: int, reason: str, details: Optional[str] = None, duration: Optional[int] = None, duration_type: Optional[str] = None) -> str:
         """
         Snooze a specific occurrence of an issue.
+
+        To snooze a whole issue, list its occurrences with list_occurrences and snooze each one.
 
         Args:
             issue_id: The ID of the issue
             occurrence_id: The ID of the occurrence to snooze
             reason: Reason for snoozing (required, must be one of ACCEPT_RISK, FALSE_POSITIVE, MITIGATING_CONTROLS)
-            details: Optional details for the snooze
-            duration: Optional duration for the snooze (in seconds)
-            duration_type: Optional duration type (e.g., 'days', 'hours')
-            
+            details: Optional free-text details for the snooze
+            duration: Optional number of duration_type units to snooze for (ignored when duration_type is 'forever')
+            duration_type: Optional duration type, one of 'forever', 'day', 'week', 'month'
+
         The reasons mean:
-            - ACCEPT_RISK - Risk accepted for the issue and all of its occurrences
-            - FALSE_POSITIVE - False positive - issue and all occurrences have been verified as not exploitable
-            - MITIGATING_CONTROLS - Mitigating controls are in place
+            - ACCEPT_RISK - Risk accepted for this specific occurrence
+            - FALSE_POSITIVE - False positive - occurrence has been verified as not exploitable
+            - MITIGATING_CONTROLS - Mitigating controls are in place for this occurrence
         """
         result = api.snooze_occurrence(issue_id, occurrence_id, reason=reason, details=details, duration=duration, duration_type=duration_type)
-        return result.get("message", str(result))
+        return result.get("detail", str(result))
 
     @mcp.tool()
     async def list_scan_schedules() -> str:

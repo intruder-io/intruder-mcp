@@ -261,11 +261,6 @@ class PaginatedTargetList(PaginatedResponse):
 class PaginatedLicensesList(PaginatedResponse):
     results: List[Licenses]
 
-class IssueSnoozeReasonEnum(str, Enum):
-    ACCEPT_RISK = "ACCEPT_RISK"
-    FALSE_POSITIVE = "FALSE_POSITIVE"
-    MITIGATING_CONTROLS = "MITIGATING_CONTROLS"
-
 class OccurrencesSnoozeReasonEnum(str, Enum):
     ACCEPT_RISK = "ACCEPT_RISK"
     FALSE_POSITIVE = "FALSE_POSITIVE"
@@ -314,12 +309,6 @@ class PatchedAssessmentScheduleCreateUpdateRequest(BaseModel):
     web_ports_only: Optional[bool] = None
     upload_to_drata: Optional[bool] = None
     upload_to_vanta: Optional[bool] = None
-
-class SnoozeIssueRequest(BaseModel):
-    details: Optional[str] = None
-    duration: Optional[int] = None
-    duration_type: Optional[str] = None  # Should match DurationTypeEnum if defined
-    reason: IssueSnoozeReasonEnum
 
 class SnoozeOccurrenceRequest(BaseModel):
     details: Optional[str] = None
