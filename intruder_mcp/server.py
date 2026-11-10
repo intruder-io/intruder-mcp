@@ -1,14 +1,55 @@
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, List, Dict
 from mcp.server.fastmcp import FastMCP
 from intruder_mcp.api_client import IntruderAPI
-from intruder_mcp.enums import ScanFrequencyEnum
+from intruder_mcp.enums import ScanFrequencyEnum, NetworkService, Target
 
 
 def _parse_iso8601(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+# The attack surface API rejects date-times without an offset, so dates and naive times are taken as UTC.
+def _parse_iso8601_utc(value: str) -> datetime:
+    parsed = _parse_iso8601(value)
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _format_date(value: datetime) -> str:
+    return value.date().isoformat()
+
+
+def _format_target(target: Target) -> str:
+    line = f"{target.id} - {target.address}"
+    if target.ip_address and target.ip_address != target.address:
+        line += f" [{target.ip_address}]"
+    line += f" ({target.target_status.value})"
+    if target.hostnames and target.hostnames != [target.address]:
+        line += f", hostnames: {', '.join(target.hostnames)}"
+    return line
+
+
+def _format_network_service(service: NetworkService) -> str:
+    parts = [f"{service.port}/{service.protocol}", service.name or "unknown service"]
+    if service.product:
+        parts.append(f"product: {service.product}")
+    if service.version:
+        parts.append(f"version: {service.version}")
+    if service.extra_info:
+        parts.append(f"info: {service.extra_info}")
+    if service.http_title:
+        parts.append(f'title: "{service.http_title}"')
+    if service.ssl_cert_expiry_date:
+        parts.append(f"TLS expires: {_format_date(service.ssl_cert_expiry_date)}")
+    if service.waf_provider:
+        parts.append(f"WAF: {service.waf_provider}")
+    if service.first_observed_at:
+        parts.append(f"first seen: {_format_date(service.first_observed_at)}")
+    if service.last_observed_at:
+        parts.append(f"last seen: {_format_date(service.last_observed_at)}")
+    return " | ".join(parts)
 
 
 def main():
@@ -35,12 +76,93 @@ def main():
     @mcp.tool()
     async def list_targets() -> str:
         """
-        List all targets in the Intruder account and their associated IDs and status (one of 'live', 'license_exceeded', 'unscanned', 'unresponsive', 'agent_uninstalled').
+        List all targets in the Intruder account with their IDs, IP address and hostnames (when scanned) and status (one of 'live', 'license_exceeded', 'unscanned', 'unresponsive', 'agent_uninstalled').
         """
 
         targets = api.list_targets_all()
-        formatted = [f"{target.id} - {target.address} ({target.target_status})" for target in targets]
+        formatted = [_format_target(target) for target in targets]
         return "\n".join(formatted)
+
+    @mcp.tool()
+    async def list_network_services(target_ids: Optional[List[int]] = None,
+                                    tag_names: Optional[List[str]] = None,
+                                    ports: Optional[List[int]] = None,
+                                    protocols: Optional[List[str]] = None,
+                                    names: Optional[List[str]] = None,
+                                    ssl_cert_expired: bool = False,
+                                    ssl_cert_expiring_within_days: Optional[int] = None,
+                                    ssl_cert_expiry_after: Optional[str] = None,
+                                    ssl_cert_expiry_before: Optional[str] = None,
+                                    search: Optional[str] = None,
+                                    offset: int = 0) -> str:
+        """
+        List the external attack surface: the network services (open ports) detected on targets by network scans,
+        including product, version, web page title, TLS certificate expiry, web application firewall, and when each
+        service was first and last seen. Use it to find where a product, service or port is exposed.
+        Services are grouped under their target ID; use list_targets to get each target's address, IP address and
+        hostnames, and to find target IDs to filter by.
+        Returns up to 100 services per call, ordered by target address, port and protocol.
+        If there are more, call again with the offset given.
+
+        Args:
+            target_ids: Filter by a list of target IDs (as returned by list_targets)
+            tag_names: Filter by a list of tag names
+            ports: Filter by a list of ports
+            protocols: Filter by a list of protocols ('tcp', 'udp')
+            names: Filter by a list of service names (exact match, e.g. 'https', 'ssh')
+            ssl_cert_expired: Only services whose TLS certificate has already expired. Set together with
+                ssl_cert_expiring_within_days to get certificates that have expired or will expire within that many days.
+            ssl_cert_expiring_within_days: Only services whose TLS certificate has not yet expired but will within this
+                many days (e.g. 30 for certificates expiring in the next month)
+            ssl_cert_expiry_after: Only services whose TLS certificate expires at or after this time (ISO 8601 date or
+                date-time, e.g. 2026-01-15 or 2026-01-15T00:00:00Z; UTC if no offset is given). Cannot be combined with
+                ssl_cert_expired or ssl_cert_expiring_within_days.
+            ssl_cert_expiry_before: Only services whose TLS certificate expires at or before this time (same format as
+                ssl_cert_expiry_after). Combine with ssl_cert_expiry_after for a specific window. Cannot be combined
+                with ssl_cert_expired or ssl_cert_expiring_within_days.
+            search: Case-insensitive partial match on service name or product (e.g. 'nginx', 'ssh')
+            offset: Number of services to skip, for paging through results
+        """
+        if ssl_cert_expired or ssl_cert_expiring_within_days is not None:
+            if ssl_cert_expiry_after or ssl_cert_expiry_before:
+                raise ValueError("Use either ssl_cert_expired/ssl_cert_expiring_within_days or "
+                                 "ssl_cert_expiry_after/ssl_cert_expiry_before, not both")
+            if ssl_cert_expiring_within_days is not None and ssl_cert_expiring_within_days < 1:
+                raise ValueError("ssl_cert_expiring_within_days must be at least 1")
+            now = datetime.now(timezone.utc)
+            expiry_after = None if ssl_cert_expired else now
+            expiry_before = now + timedelta(days=ssl_cert_expiring_within_days) if ssl_cert_expiring_within_days else now
+        else:
+            expiry_after = _parse_iso8601_utc(ssl_cert_expiry_after) if ssl_cert_expiry_after else None
+            expiry_before = _parse_iso8601_utc(ssl_cert_expiry_before) if ssl_cert_expiry_before else None
+
+        page = api.list_network_services(
+            target_ids=target_ids,
+            tag_names=tag_names,
+            ports=ports,
+            protocols=protocols,
+            names=names,
+            ssl_cert_expiry_after=expiry_after,
+            ssl_cert_expiry_before=expiry_before,
+            search=search,
+            limit=PAGE_SIZE,
+            offset=offset,
+        )
+        if not page.results:
+            return "No network services found"
+
+        end = offset + len(page.results)
+        header = f"Services {offset + 1}-{end} of {page.count}"
+        if page.next:
+            header += f" (call again with offset={end} for more)"
+        lines = [header]
+        previous_target_id = None
+        for service in page.results:
+            if service.target_id != previous_target_id:
+                lines.append(f"Target {service.target_id}")
+                previous_target_id = service.target_id
+            lines.append(f"  {_format_network_service(service)}")
+        return "\n".join(lines)
 
     @mcp.tool()
     async def list_issues(target_addresses: Optional[List[str]] = None,

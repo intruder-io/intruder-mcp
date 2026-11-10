@@ -122,6 +122,23 @@ class Target(BaseModel):
     license_type: Optional[LicenseTypeEnum] = None
     tags: Optional[List[Optional[str]]] = None
     target_status: TargetStatusEnum
+    ip_address: Optional[str] = None
+    hostnames: Optional[List[str]] = None
+
+class NetworkService(BaseModel):
+    id: int
+    target_id: int
+    port: int
+    protocol: str
+    name: Optional[str] = None
+    product: Optional[str] = None
+    version: Optional[str] = None
+    extra_info: Optional[str] = None
+    http_title: Optional[str] = None
+    ssl_cert_expiry_date: Optional[datetime] = None
+    waf_provider: Optional[str] = None
+    first_observed_at: Optional[datetime] = None
+    last_observed_at: Optional[datetime] = None
 
 class TargetCreateRequest(BaseModel):
     address: str
@@ -260,6 +277,9 @@ class PaginatedTargetList(PaginatedResponse):
 
 class PaginatedLicensesList(PaginatedResponse):
     results: List[Licenses]
+
+class PaginatedNetworkServiceList(PaginatedResponse):
+    results: List[NetworkService]
 
 class OccurrencesSnoozeReasonEnum(str, Enum):
     ACCEPT_RISK = "ACCEPT_RISK"

@@ -10,7 +10,8 @@ from .enums import (
     PaginatedScanListList, PaginatedScannerOutputListList, PaginatedTagsList, PaginatedTargetAuthenticationsList,
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
-    AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum
+    AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
+    PaginatedNetworkServiceList
 )
 
 
@@ -183,6 +184,28 @@ class IntruderAPI:
         if offset:
             params["offset"] = offset
         return PaginatedTargetList(**self.client.get(f"{self.base_url}/targets/", params=params).json())
+
+    def list_network_services(self, target_ids: Optional[List[int]] = None, tag_names: Optional[List[str]] = None,
+                              ports: Optional[List[int]] = None, protocols: Optional[List[str]] = None,
+                              names: Optional[List[str]] = None, ssl_cert_expiry_after: Optional[datetime] = None,
+                              ssl_cert_expiry_before: Optional[datetime] = None, search: Optional[str] = None,
+                              limit: Optional[int] = None, offset: Optional[int] = None) -> PaginatedNetworkServiceList:
+        params = {}
+        for key, values in (("target_ids", target_ids), ("tag_names", tag_names), ("ports", ports),
+                            ("protocols", protocols), ("names", names)):
+            if values:
+                params[key] = ",".join(str(value) for value in values)
+        if ssl_cert_expiry_after:
+            params["ssl_cert_expiry_after"] = ssl_cert_expiry_after.isoformat()
+        if ssl_cert_expiry_before:
+            params["ssl_cert_expiry_before"] = ssl_cert_expiry_before.isoformat()
+        if search:
+            params["search"] = search
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedNetworkServiceList(**self.client.get(f"{self.base_url}/attack-surface/services/", params=params).json())
 
     def list_targets_all(self, address: Optional[str] = None, target_status: Optional[str] = None) -> Generator[Target, None, None]:
         offset = 0
