@@ -91,16 +91,17 @@ def main():
     @mcp.tool()
     async def list_tags(target_address: Optional[str] = None) -> str:
         """
-        List all tags in the Intruder account with optional filters. Tags are applied to targets.
+        List all tags in the Intruder account. Tags are applied to targets.
 
         Args:
-            target_address: Filter by a list of target address
+            target_address: Only list tags applied to targets matching this address
         """
-        targets = api.list_targets_all(address=target_address)
-        tags = set()
-        for target in targets:
-            if target.tags:
-                tags.update(target.tags)
+        if target_address:
+            targets = api.list_targets_all(address=target_address)
+            tags = {tag for target in targets for tag in target.tags or []}
+        else:
+            # A tag name can exist once per cloud integration, so the endpoint may repeat names
+            tags = {tag.name for tag in api.list_tags_all()}
         return "\n".join(sorted(tags))
 
     @mcp.tool()

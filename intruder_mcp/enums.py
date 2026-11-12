@@ -71,7 +71,7 @@ class PluginDetail(BaseModel):
     name: str
 
 class Tags(BaseModel):
-    name: str = Field(..., max_length=40)
+    name: str
 
 class TagsRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=40)

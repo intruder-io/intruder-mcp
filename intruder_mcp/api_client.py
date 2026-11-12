@@ -195,6 +195,24 @@ class IntruderAPI:
                 break
             offset += len(response.results)
 
+    def list_tags(self, limit: Optional[int] = None, offset: Optional[int] = None) -> PaginatedTagsList:
+        params = {}
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedTagsList(**self.client.get(f"{self.base_url}/tags/", params=params).json())
+
+    def list_tags_all(self) -> Generator[Tags, None, None]:
+        offset = 0
+        while True:
+            response = self.list_tags(limit=100, offset=offset)
+            for tag in response.results:
+                yield tag
+            if not response.next:
+                break
+            offset += len(response.results)
+
     def create_scan(self, target_addresses: Optional[List[str]] = None,
                    tag_names: Optional[List[str]] = None) -> Scan:
         data = ScanRequest(target_addresses=target_addresses, tag_names=tag_names)
