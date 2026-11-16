@@ -555,6 +555,75 @@ def main():
         api.delete_scan_schedule(schedule_id)
         return f"Deleted scan schedule {schedule_id}"
 
+    @mcp.tool()
+    async def list_ai_pentests() -> str:
+        """
+        List all AI pentests in the Intruder account with their IDs, the URL of the application being tested and status (one of 'pending', 'started', 'completed', 'cancelled', 'aborted', 'cancellation_pending').
+        """
+        ai_pentests = api.list_ai_pentests_all()
+        formatted = [f"{ai_pentest.id} - {ai_pentest.url} ({ai_pentest.status})" for ai_pentest in ai_pentests]
+        return "\n".join(formatted) or "No AI pentests found."
+
+    @mcp.tool()
+    async def get_ai_pentest(ai_pentest_id: str) -> str:
+        """
+        Get details of a specific AI pentest.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to get
+        """
+        ai_pentest = api.get_ai_pentest(ai_pentest_id)
+        details = [
+            f"AI pentest {ai_pentest.id}",
+            f"URL: {ai_pentest.url}",
+            f"Application: {ai_pentest.application_name or '(none)'}",
+            f"Environment: {ai_pentest.environment or '(none)'}",
+            f"Status: {ai_pentest.status}",
+            f"Created: {ai_pentest.created_at}",
+        ]
+        if ai_pentest.completed_at:
+            details.append(f"Completed: {ai_pentest.completed_at}")
+        if ai_pentest.canceled_at:
+            details.append(f"Cancelled: {ai_pentest.canceled_at}")
+        if ai_pentest.retest_status:
+            details.append(f"Latest retest: {ai_pentest.retest_status}")
+        if ai_pentest.release_test_status:
+            details.append(f"Latest release test: {ai_pentest.release_test_status}")
+        return "\n".join(details)
+
+    @mcp.tool()
+    async def list_ai_pentest_findings(ai_pentest_id: str, statuses: Optional[List[str]] = None) -> str:
+        """
+        List findings of an AI pentest, most severe first, including the full write-up for each.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to list findings for
+            statuses: Filter by finding statuses (any of 'open', 'fixed'). Defaults to open findings only.
+        """
+        findings = api.list_ai_pentest_findings_all(ai_pentest_id, statuses=statuses)
+        blocks = []
+        for finding in findings:
+            block = [
+                f"{finding.id} - {finding.title}",
+                f"  severity: {finding.severity}",
+                f"  status: {finding.status}",
+                f"  impact: {finding.impact}",
+                f"  likelihood: {finding.likelihood}",
+            ]
+            if finding.location:
+                lines = ", ".join(finding.location.lines or [])
+                block.append(f"  location: {finding.location.file or '(unknown file)'}{f' (lines {lines})' if lines else ''}")
+            block.extend([
+                f"  overview: {finding.overview}",
+                f"  evidence: {finding.evidence}",
+                f"  technical_details: {finding.technical_details}",
+                f"  remediation: {finding.remediation}",
+            ])
+            if finding.retest_summary:
+                block.append(f"  retest_summary: {finding.retest_summary}")
+            blocks.append("\n".join(block))
+        return "\n\n".join(blocks) or "No findings found."
+
     mcp.run(transport="stdio")
 
 if __name__ == "__main__":

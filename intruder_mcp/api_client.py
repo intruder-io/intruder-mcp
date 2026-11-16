@@ -11,7 +11,8 @@ from .enums import (
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
-    PaginatedNetworkServiceList
+    PaginatedNetworkServiceList, AiPentest, AiPentestFinding, PaginatedAiPentestList,
+    PaginatedAiPentestFindingList
 )
 
 
@@ -232,6 +233,52 @@ class IntruderAPI:
             response = self.list_tags(limit=100, offset=offset)
             for tag in response.results:
                 yield tag
+            if not response.next:
+                break
+            offset += len(response.results)
+
+    def list_ai_pentests(self, limit: Optional[int] = None, offset: Optional[int] = None) -> PaginatedAiPentestList:
+        params = {}
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestList(**self.client.get(f"{self.base_url}/ai-pentests/", params=params).json())
+
+    def list_ai_pentests_all(self) -> Generator[AiPentest, None, None]:
+        offset = 0
+        while True:
+            response = self.list_ai_pentests(limit=100, offset=offset)
+            for ai_pentest in response.results:
+                yield ai_pentest
+            if not response.next:
+                break
+            offset += len(response.results)
+
+    def get_ai_pentest(self, ai_pentest_id: str) -> AiPentest:
+        return AiPentest(**self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/").json())
+
+    def list_ai_pentest_findings(self, ai_pentest_id: str, statuses: Optional[List[str]] = None,
+                                 limit: Optional[int] = None,
+                                 offset: Optional[int] = None) -> PaginatedAiPentestFindingList:
+        params = {}
+        if statuses:
+            params["statuses"] = ",".join(statuses)
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestFindingList(
+            **self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/findings/", params=params).json()
+        )
+
+    def list_ai_pentest_findings_all(self, ai_pentest_id: str,
+                                     statuses: Optional[List[str]] = None) -> Generator[AiPentestFinding, None, None]:
+        offset = 0
+        while True:
+            response = self.list_ai_pentest_findings(ai_pentest_id, statuses=statuses, limit=100, offset=offset)
+            for finding in response.results:
+                yield finding
             if not response.next:
                 break
             offset += len(response.results)

@@ -283,6 +283,42 @@ class PaginatedLicensesList(PaginatedResponse):
 class PaginatedNetworkServiceList(PaginatedResponse):
     results: List[NetworkService]
 
+class AiPentest(BaseModel):
+    id: str
+    status: str
+    url: str
+    application_name: Optional[str] = None
+    environment: Optional[str] = None
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+    canceled_at: Optional[datetime] = None
+    retest_status: Optional[str] = None
+    release_test_status: Optional[str] = None
+
+class AiPentestFindingLocation(BaseModel):
+    file: Optional[str] = None
+    lines: Optional[List[str]] = None
+
+class AiPentestFinding(BaseModel):
+    id: str
+    title: str
+    severity: str
+    status: str
+    impact: str
+    likelihood: str
+    overview: str
+    evidence: str
+    technical_details: str
+    remediation: str
+    retest_summary: Optional[str] = None
+    location: Optional[AiPentestFindingLocation] = None
+
+class PaginatedAiPentestList(PaginatedResponse):
+    results: List[AiPentest]
+
+class PaginatedAiPentestFindingList(PaginatedResponse):
+    results: List[AiPentestFinding]
+
 class OccurrencesSnoozeReasonEnum(StrEnum):
     ACCEPT_RISK = "ACCEPT_RISK"
     FALSE_POSITIVE = "FALSE_POSITIVE"
