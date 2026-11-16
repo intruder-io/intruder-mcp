@@ -624,6 +624,20 @@ def main():
             blocks.append("\n".join(block))
         return "\n\n".join(blocks) or "No findings found."
 
+    @mcp.tool()
+    async def start_ai_pentest_release_test(ai_pentest_id: str) -> str:
+        """
+        Start a release test of an AI pentest, using its existing configuration.
+        Only call this when the user asks to start one. It fails if a test is already running,
+        or if the full test has no results or recorded commits yet.
+        Check its progress with get_ai_pentest (release test status).
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to release test
+        """
+        run = api.start_ai_pentest_release_test(ai_pentest_id)
+        return f"Started release test {run.id} ({run.status})"
+
     mcp.run(transport="stdio")
 
 if __name__ == "__main__":

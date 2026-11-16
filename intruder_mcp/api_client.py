@@ -11,7 +11,7 @@ from .enums import (
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
-    PaginatedNetworkServiceList, AiPentest, AiPentestFinding, PaginatedAiPentestList,
+    PaginatedNetworkServiceList, AiPentest, AiPentestFinding, AiPentestRun, PaginatedAiPentestList,
     PaginatedAiPentestFindingList
 )
 
@@ -282,6 +282,9 @@ class IntruderAPI:
             if not response.next:
                 break
             offset += len(response.results)
+
+    def start_ai_pentest_release_test(self, ai_pentest_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{ai_pentest_id}/release-tests/").json())
 
     def create_scan(self, target_addresses: Optional[List[str]] = None,
                    tag_names: Optional[List[str]] = None) -> Scan:

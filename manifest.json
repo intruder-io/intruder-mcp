@@ -4,7 +4,7 @@
   "display_name": "Intruder",
   "version": "0.1.6",
   "description": "Query and manage your Intruder targets, issues, scans, attack surface and AI pentests.",
-  "long_description": "Connect Claude to [Intruder](https://www.intruder.io/) to ask about your targets, issues, open ports and TLS certificates, start or cancel scans, manage scan schedules, and see your AI pentests and their findings. Requires an Intruder API key: see [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).",
+  "long_description": "Connect Claude to [Intruder](https://www.intruder.io/) to ask about your targets, issues, open ports and TLS certificates, start or cancel scans, manage scan schedules, see AI pentest findings, and start release tests. Requires an Intruder API key: see [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).",
   "author": {
     "name": "Intruder",
     "url": "https://www.intruder.io"
@@ -53,7 +53,8 @@
     { "name": "snooze_occurrence", "description": "Snooze an issue occurrence (makes changes)" },
     { "name": "create_scan_schedule", "description": "Create a recurring scan schedule (makes changes)" },
     { "name": "update_scan_schedule", "description": "Change a scan schedule (makes changes)" },
-    { "name": "delete_scan_schedule", "description": "Delete a scan schedule (makes changes)" }
+    { "name": "delete_scan_schedule", "description": "Delete a scan schedule (makes changes)" },
+    { "name": "start_ai_pentest_release_test", "description": "Start a release test of an AI pentest (makes changes)" }
   ],
   "user_config": {
     "api_key": {

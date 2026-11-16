@@ -319,6 +319,12 @@ class PaginatedAiPentestList(PaginatedResponse):
 class PaginatedAiPentestFindingList(PaginatedResponse):
     results: List[AiPentestFinding]
 
+class AiPentestRun(BaseModel):
+    id: str
+    type: str
+    status: str
+    created_at: datetime
+
 class OccurrencesSnoozeReasonEnum(StrEnum):
     ACCEPT_RISK = "ACCEPT_RISK"
     FALSE_POSITIVE = "FALSE_POSITIVE"
