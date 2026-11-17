@@ -56,6 +56,7 @@ def main():
     api_key = os.environ.get("INTRUDER_API_KEY")
     if not api_key:
         print("Error: INTRUDER_API_KEY environment variable not set", file=sys.stderr)
+        sys.exit(1)
 
     api = IntruderAPI(api_key)
     mcp = FastMCP("intruder")
