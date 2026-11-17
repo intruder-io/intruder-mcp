@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field, HttpUrl
 from datetime import datetime, date
-from enum import Enum
+from enum import StrEnum
 
-class ExploitLikelihoodEnum(str, Enum):
+class ExploitLikelihoodEnum(StrEnum):
     RARE = "rare"
     UNLIKELY = "unlikely"
     LIKELY = "likely"
@@ -11,7 +11,7 @@ class ExploitLikelihoodEnum(str, Enum):
     KNOWN = "known"
     UNKNOWN = "unknown"
 
-class ScanStatusField(str, Enum):
+class ScanStatusField(StrEnum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
@@ -19,7 +19,7 @@ class ScanStatusField(str, Enum):
     CANCELLED_NO_VALID_TARGETS = "cancelled_no_valid_targets"
     ANALYSING_RESULTS = "analysing_results"
 
-class ScanTypeEnum(str, Enum):
+class ScanTypeEnum(StrEnum):
     ASSESSMENT_SCHEDULE = "assessment_schedule"
     NEW_SERVICE = "new_service"
     CLOUDBOT_NEW_TARGET = "cloudbot_new_target"
@@ -28,35 +28,36 @@ class ScanTypeEnum(str, Enum):
     CLOUD_SECURITY = "cloud_security"
     CONTAINER_IMAGE = "container_image"
 
-class SchedulePeriodEnum(str, Enum):
+class SchedulePeriodEnum(StrEnum):
     MONTHLY = "monthly"
     DAILY = "daily"
     ONE_OFF = "one_off"
     WEEKLY = "weekly"
     QUARTERLY = "quarterly"
 
-class ScanFrequencyEnum(str, Enum):
+class ScanFrequencyEnum(StrEnum):
     MONTHLY = "monthly"
     DAILY = "daily"
     WEEKLY = "weekly"
     QUARTERLY = "quarterly"
 
-class TypeEnum(str, Enum):
+class TypeEnum(StrEnum):
     HTTP_HEADER = "http_header"
     SESSION_COOKIE = "session_cookie"
     HTTP = "http"
     FORM = "form"
     RECORDED = "recorded"
     UNAUTHENTICATED = "unauthenticated"
+    OAUTH_CLIENT_CREDENTIALS = "oauth_client_credentials"
 
-class TargetStatusEnum(str, Enum):
+class TargetStatusEnum(StrEnum):
     LIVE = "live"
     LICENSE_EXCEEDED = "license_exceeded"
     UNSCANNED = "unscanned"
     UNRESPONSIVE = "unresponsive"
     AGENT_UNINSTALLED = "agent_uninstalled"
 
-class LicenseTypeEnum(str, Enum):
+class LicenseTypeEnum(StrEnum):
     # Ignore the swagger file here - it incorrectly defines this as an int
     INFRASTRUCTURE = "infrastructure"
     APPLICATION = "application"
@@ -178,7 +179,7 @@ class Issue(BaseModel):
     title: str
     description: str
     remediation: str
-    snoozed: bool
+    snoozed: Optional[bool] = None
     snooze_reason: Optional[str] = None
     snooze_until: Optional[date] = None
     occurrences: Optional[HttpUrl] = None
@@ -192,7 +193,7 @@ class Occurrence(BaseModel):
     protocol: str
     extra_info: Optional[Dict[str, str]] = None
     age: str
-    snoozed: bool
+    snoozed: Optional[bool] = None
     snooze_reason: Optional[str] = None
     snooze_until: Optional[date] = None
     exploit_likelihood: Union[ExploitLikelihoodEnum, None]
@@ -282,7 +283,7 @@ class PaginatedLicensesList(PaginatedResponse):
 class PaginatedNetworkServiceList(PaginatedResponse):
     results: List[NetworkService]
 
-class OccurrencesSnoozeReasonEnum(str, Enum):
+class OccurrencesSnoozeReasonEnum(StrEnum):
     ACCEPT_RISK = "ACCEPT_RISK"
     FALSE_POSITIVE = "FALSE_POSITIVE"
     MITIGATING_CONTROLS = "MITIGATING_CONTROLS"
@@ -291,7 +292,7 @@ class AssessmentScheduleList(BaseModel):
     id: int
     name: str
     schedule_period: SchedulePeriodEnum
-    first_scan_time: datetime
+    first_scan_time: Optional[datetime] = None
     next_scan_date: datetime
     status: str
     throttled: bool
