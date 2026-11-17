@@ -92,7 +92,7 @@ Pick your client below, then use the uvx **or** Docker snippet. In every snippet
 
 ### Claude Desktop
 
-**Recommended: install the extension.** [Download `intruder.mcpb`](https://github.com/intruder-io/intruder-mcp/releases/latest/download/intruder.mcpb), double-click it (or drag it into **Settings → Extensions**), and enter your API key when asked. Claude Desktop stores the key encrypted (protected by your system keychain) and runs the server for you, so you don't need uv or Docker.
+**Recommended: install the extension.** [Download `intruder.mcpb`](https://github.com/intruder-io/intruder-mcp/releases/latest/download/intruder.mcpb) (it's attached to each [GitHub release](https://github.com/intruder-io/intruder-mcp/releases/latest), so you don't need to clone this repository), double-click it (or drag it into **Settings → Extensions**), and enter your API key when asked. Claude Desktop stores the key encrypted (protected by your system keychain) and runs the server for you, so you don't need uv or Docker.
 
 Claude Desktop warns that the extension can access everything on your computer and that its developer details aren't verified by Anthropic. It shows this for every extension installed from a file. This extension only talks to the Intruder API (`api.intruder.io`), and its source is in this repository.
 
