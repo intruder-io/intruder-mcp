@@ -1,0 +1,11 @@
+.venv/
+.git/
+.github/
+**/__pycache__/
+*.pyc
+.env
+.DS_Store
+Dockerfile
+.dockerignore
+glama.json
+*.mcpb

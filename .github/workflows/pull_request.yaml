@@ -52,3 +52,36 @@ jobs:
           file: ./Dockerfile
           tags: |
             ghcr.io/intruder-io/${{ env.IMAGE_NAME }}:${{ steps.prep.outputs.VERSION }}
+
+  extension:
+    name: check Claude Desktop extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate and pack
+        run: |
+          npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . intruder.mcpb
+      # The manifest's tool list is shown on the install screen, so it must match the server's tools.
+      - name: Check manifest tools match the server
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
+            '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+            '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+            | INTRUDER_API_KEY=dummy timeout 60 uv run --locked intruder-mcp > /tmp/responses.jsonl || true
+          uv run --no-project python - <<'PY'
+          import json, sys
+          server = {t["name"] for l in open("/tmp/responses.jsonl") for t in json.loads(l).get("result", {}).get("tools", [])}
+          manifest = {t["name"] for t in json.load(open("manifest.json"))["tools"]}
+          if not server or server != manifest:
+              sys.exit(f"Missing from manifest.json: {sorted(server - manifest)}\nNot in server: {sorted(manifest - server)}")
+          print(f"{len(server)} tools match")
+          PY

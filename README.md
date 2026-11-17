@@ -24,6 +24,8 @@ For more examples, see [our blog post](https://www.intruder.io/blog/claude-intru
 
 Most people can be up and running in about five minutes.
 
+**Using Claude Desktop?** Get an API key, then [install the extension](#claude-desktop). It skips steps 2 and 3.
+
 ---
 
 ## 1. Get an Intruder API key
@@ -90,7 +92,11 @@ Pick your client below, then use the uvx **or** Docker snippet. In every snippet
 
 ### Claude Desktop
 
-Open **Settings → Developer → Edit Config**, or open the file directly:
+**Recommended: install the extension.** [Download `intruder.mcpb`](https://github.com/intruder-io/intruder-mcp/releases/latest/download/intruder.mcpb), double-click it (or drag it into **Settings → Extensions**), and enter your API key when asked. Claude Desktop stores the key encrypted (protected by your system keychain) and runs the server for you, so you don't need uv or Docker.
+
+Claude Desktop warns that the extension can access everything on your computer and that its developer details aren't verified by Anthropic. It shows this for every extension installed from a file. This extension only talks to the Intruder API (`api.intruder.io`), and its source is in this repository.
+
+**Or configure it manually.** Open **Settings → Developer → Edit Config**, or open the file directly:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -207,6 +213,7 @@ If it sits waiting with no error, it has started correctly (it's waiting for a c
   ```
   then press Ctrl+C and restart your MCP client.
 - **Docker:** run `docker pull ghcr.io/intruder-io/intruder-mcp` and restart your MCP client.
+- **Claude Desktop extension:** download and open the latest `intruder.mcpb` again.
 
 **Want a fixed version?** For uvx, add a commit or tag to the URL, for example `git+https://github.com/intruder-io/intruder-mcp@<commit-sha>`. Updates then only happen when you change it.
 
@@ -214,7 +221,7 @@ If it sits waiting with no error, it has started correctly (it's waiting for a c
 
 ## Keeping your API key safe
 
-- Your key is stored in plain text in your MCP client's config file. On macOS or Linux you can make that file readable only by you with `chmod 600 <path-to-config>`.
+- If you configure the server manually, your key is stored in plain text in your MCP client's config file (the Claude Desktop extension stores it encrypted instead). On macOS or Linux you can make that file readable only by you with `chmod 600 <path-to-config>`.
 - Never commit a config file containing your key to a repository, or paste the key into a chat.
 - If you think your key has been exposed, revoke it in the Intruder portal and create a new one.
 
@@ -260,6 +267,8 @@ Then point your MCP client at your local copy, using the absolute path to the re
 ```
 
 To build the Docker image locally: `docker build -t intruder-mcp .`
+
+To build the Claude Desktop extension locally (needs Node): `npx @anthropic-ai/mcpb pack . intruder.mcpb`
 
 ---
 

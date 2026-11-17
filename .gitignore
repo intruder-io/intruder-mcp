@@ -11,3 +11,4 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+*.mcpb
