@@ -72,16 +72,22 @@ jobs:
       # The manifest's tool list is shown on the install screen, so it must match the server's tools.
       - name: Check manifest tools match the server
         run: |
-          printf '%s\n' \
-            '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
-            '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
-            '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
-            | INTRUDER_API_KEY=dummy timeout 60 uv run --locked intruder-mcp > /tmp/responses.jsonl || true
-          uv run --no-project python - <<'PY'
-          import json, sys
-          server = {t["name"] for l in open("/tmp/responses.jsonl") for t in json.loads(l).get("result", {}).get("tools", [])}
-          manifest = {t["name"] for t in json.load(open("manifest.json"))["tools"]}
-          if not server or server != manifest:
+          timeout 120 uv run --locked python - <<'PY'
+          import asyncio, json, os, sys
+          from mcp import ClientSession, StdioServerParameters
+          from mcp.client.stdio import stdio_client
+
+          async def server_tools():
+              params = StdioServerParameters(command=".venv/bin/intruder-mcp", env={**os.environ, "INTRUDER_API_KEY": "dummy"})
+              async with stdio_client(params) as streams, ClientSession(*streams) as session:
+                  await session.initialize()
+                  return {tool.name for tool in (await session.list_tools()).tools}
+
+          server = asyncio.run(server_tools())
+          manifest = {tool["name"] for tool in json.load(open("manifest.json"))["tools"]}
+          if not server:
+              sys.exit("The server returned no tools")
+          if server != manifest:
               sys.exit(f"Missing from manifest.json: {sorted(server - manifest)}\nNot in server: {sorted(manifest - server)}")
           print(f"{len(server)} tools match")
           PY
