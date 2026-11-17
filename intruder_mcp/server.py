@@ -196,7 +196,7 @@ def main():
             status: Filter by scan status (in_progress, completed, cancelled, cancelled_no_active_targets,
                    cancelled_no_valid_targets, analysing_results)
             scan_type: Filter by scan type (assessment_schedule, new_service, cloudbot_new_target,
-                     rapid_remediation, advisory, cloud_security)
+                     rapid_remediation, advisory, cloud_security, container_image)
         
         The scan_type parameters mean:
             - assessment_schedule: Scans that run on a regular schedule
@@ -205,6 +205,7 @@ def main():
             - rapid_remediation: Scans that a user can trigger to test if a specific issue has been remediated
             - advisory: An issue created by the Intruder security team based on their manual work
             - cloud_security: Scans of cloud accounts, checking the configuration of the resources in the cloud account
+            - container_image: Scans of container images for vulnerabilities
         """
         scans = api.list_scans_all(status=status, scan_type=scan_type)
         formatted = [f"{scan.id} - {scan.scan_type} ({scan.status})" for scan in scans]

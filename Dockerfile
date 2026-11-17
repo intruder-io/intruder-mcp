@@ -1,15 +1,18 @@
-# Use a Python image with uv pre-installed
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-# Set the source URL for the image
 LABEL org.opencontainers.image.source="https://github.com/intruder-io/intruder-mcp"
 
-# Copy the project into the image
-ADD . /app
-
-# Sync the project into a new environment, asserting the lockfile is up to date
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1 \
+    UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
-RUN uv sync && uv pip install -e .
 
-# Presuming there is a `my_app` command provided by the project
-CMD ["uv", "--directory", "intruder_mcp", "run", "server.py"]
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache uv sync --locked --no-dev --no-install-project
+
+COPY . .
+RUN --mount=type=cache,target=/root/.cache uv sync --locked --no-dev
+
+# Not `uv run`: it re-syncs from PyPI on start, and even with --no-sync needs a writable cache dir,
+# which breaks read-only and non-root containers.
+CMD ["/app/.venv/bin/intruder-mcp"]
