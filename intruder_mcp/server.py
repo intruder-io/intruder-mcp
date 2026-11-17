@@ -1,8 +1,11 @@
+import base64
 import os
 import sys
 from datetime import datetime, timedelta, timezone
+from importlib.resources import files
 from typing import Any, Optional, List, Dict
 from mcp.server.fastmcp import FastMCP
+from mcp.types import Icon
 from intruder_mcp.api_client import IntruderAPI
 from intruder_mcp.enums import ScanFrequencyEnum, NetworkService, Target
 
@@ -52,6 +55,13 @@ def _format_network_service(service: NetworkService) -> str:
     return " | ".join(parts)
 
 
+# Embedded as data URIs so clients can show the icon offline and without fetching from GitHub.
+# PNG first: clients must support it, whereas SVG support is optional.
+def _icon(filename: str, mime_type: str, size: str) -> Icon:
+    data = base64.b64encode(files("intruder_mcp").joinpath("assets", filename).read_bytes()).decode()
+    return Icon(src=f"data:{mime_type};base64,{data}", mimeType=mime_type, sizes=[size])
+
+
 def main():
     api_key = os.environ.get("INTRUDER_API_KEY")
     if not api_key:
@@ -59,7 +69,10 @@ def main():
         sys.exit(1)
 
     api = IntruderAPI(api_key)
-    mcp = FastMCP("intruder")
+    mcp = FastMCP("intruder", website_url="https://www.intruder.io", icons=[
+        _icon("icon.png", "image/png", "512x512"),
+        _icon("icon.svg", "image/svg+xml", "any"),
+    ])
     PAGE_SIZE = 100
 
     @mcp.tool()
