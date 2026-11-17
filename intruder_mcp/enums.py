@@ -26,6 +26,7 @@ class ScanTypeEnum(str, Enum):
     RAPID_REMEDIATION = "rapid_remediation"
     ADVISORY = "advisory"
     CLOUD_SECURITY = "cloud_security"
+    CONTAINER_IMAGE = "container_image"
 
 class SchedulePeriodEnum(str, Enum):
     MONTHLY = "monthly"
