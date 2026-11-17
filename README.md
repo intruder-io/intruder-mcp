@@ -1,3 +1,5 @@
+<img src="intruder_mcp/assets/icon.svg" alt="Intruder logo" width="80">
+
 # Intruder MCP
 
 Connect [Intruder](https://www.intruder.io/) to Claude, Cursor and other MCP clients, so you can ask questions like:
