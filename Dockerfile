@@ -13,5 +13,6 @@ RUN --mount=type=cache,target=/root/.cache uv sync --locked --no-dev --no-instal
 COPY . .
 RUN --mount=type=cache,target=/root/.cache uv sync --locked --no-dev
 
-# Without --no-sync, `uv run` re-syncs on every start, which rebuilds the package from PyPI.
-CMD ["uv", "run", "--no-sync", "intruder-mcp"]
+# Not `uv run`: it re-syncs from PyPI on start, and even with --no-sync needs a writable cache dir,
+# which breaks read-only and non-root containers.
+CMD ["/app/.venv/bin/intruder-mcp"]
