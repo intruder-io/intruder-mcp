@@ -44,6 +44,8 @@
     { "name": "list_ai_pentests", "description": "List AI pentests" },
     { "name": "get_ai_pentest", "description": "Show the details of an AI pentest" },
     { "name": "list_ai_pentest_findings", "description": "List the findings from an AI pentest" },
+    { "name": "list_ai_pentest_runs", "description": "List the runs of an AI pentest and why any failed" },
+    { "name": "get_ai_pentest_run", "description": "Show the details of an AI pentest run" },
     { "name": "create_targets", "description": "Add targets (makes changes)" },
     { "name": "delete_target", "description": "Delete a target (makes changes)" },
     { "name": "create_target_tag", "description": "Add a tag to a target (makes changes)" },

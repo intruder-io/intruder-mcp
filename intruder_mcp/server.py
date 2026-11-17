@@ -630,13 +630,54 @@ def main():
         Start a release test of an AI pentest, using its existing configuration.
         Only call this when the user asks to start one. It fails if a test is already running,
         or if the full test has no results or recorded commits yet.
-        Check its progress with get_ai_pentest (release test status).
+        Check its progress with get_ai_pentest_run.
 
         Args:
             ai_pentest_id: The ID of the AI pentest to release test
         """
         run = api.start_ai_pentest_release_test(ai_pentest_id)
         return f"Started release test {run.id} ({run.status})"
+
+    def format_detail_value(value) -> str:
+        return ", ".join(str(item) for item in value) if isinstance(value, list) else str(value)
+
+    def format_ai_pentest_run(run) -> str:
+        lines = [f"{run.id} - {run.type} ({run.status}), started {run.created_at}"]
+        for error in run.preflight_errors:
+            detail = ", ".join(
+                f"{key}: {format_detail_value(value)}" for key, value in error.detail.items() if value is not None
+            )
+            lines.append(f"  preflight error: {error.code}" + (f" ({detail})" if detail else ""))
+        return "\n".join(lines)
+
+    @mcp.tool()
+    async def list_ai_pentest_runs(ai_pentest_id: str) -> str:
+        """
+        List the runs of an AI pentest (its full test, retests and release tests), newest first, with their
+        status (one of 'in_progress', 'completed', 'failed', 'cancelled') and preflight errors explaining a failure.
+        A failed run's preflight errors can appear a few seconds after it fails, so fetch it again with
+        get_ai_pentest_run if it has none. If it still has none after a minute, there won't be any.
+        A restarted full test shows when its first attempt started.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to list runs for
+        """
+        runs = api.list_ai_pentest_runs_all(ai_pentest_id)
+        return "\n".join(format_ai_pentest_run(run) for run in runs) or "No runs found."
+
+    @mcp.tool()
+    async def get_ai_pentest_run(ai_pentest_id: str, run_id: str) -> str:
+        """
+        Get a run of an AI pentest with its status (one of 'in_progress', 'completed', 'failed', 'cancelled') and
+        preflight errors explaining a failure. A failed run's preflight errors can appear a few seconds after it
+        fails, so fetch it again if it has none. If it still has none after a minute, there won't be any.
+        A restarted full test shows when its first attempt started.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest
+            run_id: The ID of the run to get
+        """
+        return format_ai_pentest_run(api.get_ai_pentest_run(ai_pentest_id, run_id))
 
     mcp.run(transport="stdio")
 

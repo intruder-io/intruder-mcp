@@ -233,7 +233,7 @@ If it sits waiting with no error, it has started correctly (it's waiting for a c
 | **Issues** | `list_issues`, `list_occurrences`, `get_scanner_output`, `snooze_occurrence` |
 | **Scans** | `list_scans`, `get_scan`, `create_scan`, `cancel_scan` |
 | **Schedules** | `list_scan_schedules`, `create_scan_schedule`, `update_scan_schedule`, `delete_scan_schedule` |
-| **AI pentests** | `list_ai_pentests`, `get_ai_pentest`, `list_ai_pentest_findings`, `start_ai_pentest_release_test` |
+| **AI pentests** | `list_ai_pentests`, `get_ai_pentest`, `list_ai_pentest_findings`, `list_ai_pentest_runs`, `get_ai_pentest_run`, `start_ai_pentest_release_test` |
 
 Some tools make changes to your Intruder account (creating or deleting targets, starting or cancelling scans, snoozing issues, starting AI pentest release tests). Most MCP clients ask you to approve each tool call before it runs, so review these carefully.
 

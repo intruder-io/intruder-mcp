@@ -319,11 +319,19 @@ class PaginatedAiPentestList(PaginatedResponse):
 class PaginatedAiPentestFindingList(PaginatedResponse):
     results: List[AiPentestFinding]
 
+class AiPentestPreflightError(BaseModel):
+    code: str
+    detail: Dict[str, Any] = {}
+
 class AiPentestRun(BaseModel):
     id: str
     type: str
     status: str
     created_at: datetime
+    preflight_errors: List[AiPentestPreflightError] = []
+
+class PaginatedAiPentestRunList(PaginatedResponse):
+    results: List[AiPentestRun]
 
 class OccurrencesSnoozeReasonEnum(StrEnum):
     ACCEPT_RISK = "ACCEPT_RISK"

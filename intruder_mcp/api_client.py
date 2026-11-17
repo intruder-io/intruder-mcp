@@ -12,7 +12,7 @@ from .enums import (
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
     PaginatedNetworkServiceList, AiPentest, AiPentestFinding, AiPentestRun, PaginatedAiPentestList,
-    PaginatedAiPentestFindingList
+    PaginatedAiPentestFindingList, PaginatedAiPentestRunList
 )
 
 
@@ -285,6 +285,30 @@ class IntruderAPI:
 
     def start_ai_pentest_release_test(self, ai_pentest_id: str) -> AiPentestRun:
         return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{ai_pentest_id}/release-tests/").json())
+
+    def list_ai_pentest_runs(self, ai_pentest_id: str, limit: Optional[int] = None,
+                             offset: Optional[int] = None) -> PaginatedAiPentestRunList:
+        params = {}
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestRunList(
+            **self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/runs/", params=params).json()
+        )
+
+    def list_ai_pentest_runs_all(self, ai_pentest_id: str) -> Generator[AiPentestRun, None, None]:
+        offset = 0
+        while True:
+            response = self.list_ai_pentest_runs(ai_pentest_id, limit=100, offset=offset)
+            for run in response.results:
+                yield run
+            if not response.next:
+                break
+            offset += len(response.results)
+
+    def get_ai_pentest_run(self, ai_pentest_id: str, run_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/runs/{run_id}/").json())
 
     def create_scan(self, target_addresses: Optional[List[str]] = None,
                    tag_names: Optional[List[str]] = None) -> Scan:
