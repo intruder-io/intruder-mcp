@@ -1,6 +1,6 @@
 [project]
 name = "intruder-mcp"
-version = "0.1.0"
+version = "0.1.6"
 description = "MCP server for Intruder API"
 requires-python = ">=3.12"
 dependencies = [

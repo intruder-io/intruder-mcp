@@ -1,0 +1,73 @@
+{
+  "manifest_version": "0.4",
+  "name": "intruder",
+  "display_name": "Intruder",
+  "version": "0.1.6",
+  "description": "Query and manage your Intruder targets, issues, scans and attack surface.",
+  "long_description": "Connect Claude to [Intruder](https://www.intruder.io/) to ask about your targets, issues, open ports and TLS certificates, start or cancel scans, and manage scan schedules. Requires an Intruder API key: see [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).",
+  "author": {
+    "name": "Intruder",
+    "url": "https://www.intruder.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intruder-io/intruder-mcp"
+  },
+  "homepage": "https://www.intruder.io",
+  "documentation": "https://github.com/intruder-io/intruder-mcp#readme",
+  "support": "https://github.com/intruder-io/intruder-mcp/issues",
+  "icon": "intruder_mcp/assets/icon.png",
+  "server": {
+    "type": "uv",
+    "entry_point": "intruder_mcp/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--directory", "${__dirname}", "intruder_mcp/server.py"],
+      "env": {
+        "INTRUDER_API_KEY": "${user_config.api_key}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "get_user", "description": "Show which Intruder account the API key belongs to" },
+    { "name": "get_status", "description": "Check the Intruder API is reachable" },
+    { "name": "list_licenses", "description": "Show licence usage and limits" },
+    { "name": "list_targets", "description": "List targets with their addresses, hostnames and status" },
+    { "name": "list_tags", "description": "List the tags applied to targets" },
+    { "name": "list_network_services", "description": "List open ports, products, versions and TLS certificate expiry on your attack surface" },
+    { "name": "list_issues", "description": "List issues, filtered by severity, target, tag or snoozed status" },
+    { "name": "list_occurrences", "description": "List where an issue occurs" },
+    { "name": "get_scanner_output", "description": "Show the scanner evidence for an occurrence" },
+    { "name": "list_scans", "description": "List scans" },
+    { "name": "get_scan", "description": "Show the details of a scan" },
+    { "name": "list_scan_schedules", "description": "List scan schedules" },
+    { "name": "create_targets", "description": "Add targets (makes changes)" },
+    { "name": "delete_target", "description": "Delete a target (makes changes)" },
+    { "name": "create_target_tag", "description": "Add a tag to a target (makes changes)" },
+    { "name": "delete_target_tag", "description": "Remove a tag from a target (makes changes)" },
+    { "name": "create_scan", "description": "Start a scan (makes changes)" },
+    { "name": "cancel_scan", "description": "Cancel a running scan (makes changes)" },
+    { "name": "snooze_occurrence", "description": "Snooze an issue occurrence (makes changes)" },
+    { "name": "create_scan_schedule", "description": "Create a recurring scan schedule (makes changes)" },
+    { "name": "update_scan_schedule", "description": "Change a scan schedule (makes changes)" },
+    { "name": "delete_scan_schedule", "description": "Delete a scan schedule (makes changes)" }
+  ],
+  "user_config": {
+    "api_key": {
+      "type": "string",
+      "title": "Intruder API key",
+      "description": "Create one in the Intruder portal: https://developers.intruder.io/docs/creating-an-access-token",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "python": ">=3.12"
+    }
+  },
+  "privacy_policies": ["https://www.intruder.io/privacy"],
+  "keywords": ["intruder", "security", "vulnerability", "scanning", "attack surface"],
+  "license": "BSD-3-Clause"
+}

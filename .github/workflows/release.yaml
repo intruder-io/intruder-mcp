@@ -62,8 +62,20 @@ jobs:
         run: |
           echo 'CHANGELOG' > /tmp/release.txt
           github-release-notes -org intruder-io -repo intruder-mcp -since-latest-release >> /tmp/release.txt
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Stamp the tag's version (v1.2.3 -> 1.2.3) into the manifest so Claude Desktop shows the release version.
+      - name: Build Claude Desktop extension
+        run: |
+          jq --arg v "${GITHUB_REF_NAME#v}" '.version = $v' manifest.json > /tmp/manifest.json
+          mv /tmp/manifest.json manifest.json
+          npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json
+          npx -y @anthropic-ai/mcpb@2.1.2 pack . intruder.mcpb
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
+          artifacts: "intruder.mcpb"
           bodyFile: "/tmp/release.txt"
           token: ${{ secrets.GITHUB_TOKEN }}
