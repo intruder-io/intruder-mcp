@@ -291,6 +291,9 @@ class IntruderAPI:
             f"{self.base_url}/ai-pentests/{ai_pentest_id}/retests/", json={"finding_ids": finding_ids}
         ).json())
 
+    def cancel_ai_pentest_run(self, ai_pentest_id: str, run_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{ai_pentest_id}/runs/{run_id}/cancel/").json())
+
     def list_ai_pentest_runs(self, ai_pentest_id: str, limit: Optional[int] = None,
                              offset: Optional[int] = None) -> PaginatedAiPentestRunList:
         params = {}

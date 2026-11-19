@@ -653,6 +653,23 @@ def main():
         run = api.start_ai_pentest_retest(ai_pentest_id, finding_ids)
         return f"Started retest {run.id} ({run.status})"
 
+    @mcp.tool()
+    async def cancel_ai_pentest_run(ai_pentest_id: str, run_id: str) -> str:
+        """
+        Cancel an in-progress run of an AI pentest: its full test, a retest or a release test.
+        Only call this when the user asks to cancel one. Get run IDs from list_ai_pentest_runs.
+        Retests and release tests are cancelled straight away. A full test is 'cancellation_pending' until it has
+        stopped. It fails if the run has finished or is already being cancelled.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest
+            run_id: The ID of the run to cancel
+        """
+        run = api.cancel_ai_pentest_run(ai_pentest_id, run_id)
+        if run.status == "cancellation_pending":
+            return f"Cancellation requested for {run.type} {run.id} ({run.status})"
+        return f"Cancelled {run.type} {run.id} ({run.status})"
+
     def format_detail_value(value) -> str:
         return ", ".join(str(item) for item in value) if isinstance(value, list) else str(value)
 
@@ -669,7 +686,7 @@ def main():
     async def list_ai_pentest_runs(ai_pentest_id: str) -> str:
         """
         List the runs of an AI pentest (its full test, retests and release tests), newest first, with their
-        status (one of 'in_progress', 'completed', 'failed', 'cancelled') and preflight errors explaining a failure.
+        status (one of 'in_progress', 'cancellation_pending', 'completed', 'failed', 'cancelled') and preflight errors explaining a failure.
         A failed run's preflight errors can appear a few seconds after it fails, so fetch it again with
         get_ai_pentest_run if it has none. If it still has none after a minute, there won't be any.
         A restarted full test shows when its first attempt started.
@@ -683,7 +700,7 @@ def main():
     @mcp.tool()
     async def get_ai_pentest_run(ai_pentest_id: str, run_id: str) -> str:
         """
-        Get a run of an AI pentest with its status (one of 'in_progress', 'completed', 'failed', 'cancelled') and
+        Get a run of an AI pentest with its status (one of 'in_progress', 'cancellation_pending', 'completed', 'failed', 'cancelled') and
         preflight errors explaining a failure. A failed run's preflight errors can appear a few seconds after it
         fails, so fetch it again if it has none. If it still has none after a minute, there won't be any.
         A restarted full test shows when its first attempt started.
