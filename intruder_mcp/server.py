@@ -638,6 +638,21 @@ def main():
         run = api.start_ai_pentest_release_test(ai_pentest_id)
         return f"Started release test {run.id} ({run.status})"
 
+    @mcp.tool()
+    async def start_ai_pentest_retest(ai_pentest_id: str, finding_ids: List[str]) -> str:
+        """
+        Start a retest of findings from an AI pentest to check whether they've been fixed, using its existing
+        configuration. Only call this when the user asks to start one. Get finding IDs from list_ai_pentest_findings.
+        Findings that aren't open are skipped. It fails if none of them are open, or if a test is already running.
+        Check its progress with get_ai_pentest_run.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to retest
+            finding_ids: The IDs of the findings to retest
+        """
+        run = api.start_ai_pentest_retest(ai_pentest_id, finding_ids)
+        return f"Started retest {run.id} ({run.status})"
+
     def format_detail_value(value) -> str:
         return ", ".join(str(item) for item in value) if isinstance(value, list) else str(value)
 

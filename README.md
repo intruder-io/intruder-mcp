@@ -21,7 +21,7 @@ For more examples, see [our blog post](https://www.intruder.io/blog/claude-intru
 
 Create an access token in the Intruder portal by following [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).
 
-Treat it like a password: anyone with this key can see your targets and issues, and can start scans, add or delete targets, snooze issues, and start AI pentest release tests.
+Treat it like a password: anyone with this key can see your targets and issues, and can start scans, add or delete targets, snooze issues, and start AI pentest retests and release tests.
 
 ### 2. Add Intruder to Claude Desktop
 
@@ -233,9 +233,9 @@ If it sits waiting with no error, it has started correctly (it's waiting for a c
 | **Issues** | `list_issues`, `list_occurrences`, `get_scanner_output`, `snooze_occurrence` |
 | **Scans** | `list_scans`, `get_scan`, `create_scan`, `cancel_scan` |
 | **Schedules** | `list_scan_schedules`, `create_scan_schedule`, `update_scan_schedule`, `delete_scan_schedule` |
-| **AI pentests** | `list_ai_pentests`, `get_ai_pentest`, `list_ai_pentest_findings`, `list_ai_pentest_runs`, `get_ai_pentest_run`, `start_ai_pentest_release_test` |
+| **AI pentests** | `list_ai_pentests`, `get_ai_pentest`, `list_ai_pentest_findings`, `list_ai_pentest_runs`, `get_ai_pentest_run`, `start_ai_pentest_release_test`, `start_ai_pentest_retest` |
 
-Some tools make changes to your Intruder account (creating or deleting targets, starting or cancelling scans, snoozing issues, starting AI pentest release tests). Most MCP clients ask you to approve each tool call before it runs, so review these carefully.
+Some tools make changes to your Intruder account (creating or deleting targets, starting or cancelling scans, snoozing issues, starting AI pentest retests and release tests). Most MCP clients ask you to approve each tool call before it runs, so review these carefully.
 
 ---
 

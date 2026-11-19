@@ -286,6 +286,11 @@ class IntruderAPI:
     def start_ai_pentest_release_test(self, ai_pentest_id: str) -> AiPentestRun:
         return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{ai_pentest_id}/release-tests/").json())
 
+    def start_ai_pentest_retest(self, ai_pentest_id: str, finding_ids: List[str]) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(
+            f"{self.base_url}/ai-pentests/{ai_pentest_id}/retests/", json={"finding_ids": finding_ids}
+        ).json())
+
     def list_ai_pentest_runs(self, ai_pentest_id: str, limit: Optional[int] = None,
                              offset: Optional[int] = None) -> PaginatedAiPentestRunList:
         params = {}
