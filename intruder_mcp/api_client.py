@@ -11,7 +11,7 @@ from .enums import (
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
-    PaginatedNetworkServiceList, AiPentest, AiPentestFinding, AiPentestRun, PaginatedAiPentestList,
+    PaginatedNetworkServiceList, AiPentest, AiPentestRun, PaginatedAiPentestList,
     PaginatedAiPentestFindingList, PaginatedAiPentestRunList
 )
 
@@ -259,11 +259,14 @@ class IntruderAPI:
         return AiPentest(**self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/").json())
 
     def list_ai_pentest_findings(self, ai_pentest_id: str, statuses: Optional[List[str]] = None,
+                                 run_id: Optional[str] = None,
                                  limit: Optional[int] = None,
                                  offset: Optional[int] = None) -> PaginatedAiPentestFindingList:
         params = {}
         if statuses:
             params["statuses"] = ",".join(statuses)
+        if run_id:
+            params["run_id"] = run_id
         if limit:
             params["limit"] = limit
         if offset:
@@ -271,17 +274,6 @@ class IntruderAPI:
         return PaginatedAiPentestFindingList(
             **self.client.get(f"{self.base_url}/ai-pentests/{ai_pentest_id}/findings/", params=params).json()
         )
-
-    def list_ai_pentest_findings_all(self, ai_pentest_id: str,
-                                     statuses: Optional[List[str]] = None) -> Generator[AiPentestFinding, None, None]:
-        offset = 0
-        while True:
-            response = self.list_ai_pentest_findings(ai_pentest_id, statuses=statuses, limit=100, offset=offset)
-            for finding in response.results:
-                yield finding
-            if not response.next:
-                break
-            offset += len(response.results)
 
     def start_ai_pentest_release_test(self, ai_pentest_id: str) -> AiPentestRun:
         return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{ai_pentest_id}/release-tests/").json())

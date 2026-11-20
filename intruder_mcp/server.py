@@ -74,6 +74,8 @@ def main():
         _icon("icon.svg", "image/svg+xml", "any"),
     ])
     PAGE_SIZE = 100
+    # each finding carries its full write-up (up to ~3.5k tokens), so a bigger page can exceed MCP clients' output limits
+    AI_PENTEST_FINDINGS_PAGE_SIZE = 5
 
     @mcp.tool()
     async def get_user() -> str:
@@ -592,17 +594,31 @@ def main():
         return "\n".join(details)
 
     @mcp.tool()
-    async def list_ai_pentest_findings(ai_pentest_id: str, statuses: Optional[List[str]] = None) -> str:
+    async def list_ai_pentest_findings(ai_pentest_id: str, statuses: Optional[List[str]] = None,
+                                       run_id: Optional[str] = None, offset: int = 0) -> str:
         """
         List findings of an AI pentest, most severe first, including the full write-up for each.
+        A finding is new in a run when its first_seen_in matches that run's ID.
+        Returns up to 5 findings per call. If there are more, call again with the offset given.
 
         Args:
             ai_pentest_id: The ID of the AI pentest to list findings for
             statuses: Filter by finding statuses (any of 'open', 'fixed'). Defaults to open findings only.
+            run_id: Only return findings from this run, including ones an earlier run found first. Only open findings
+                are returned unless statuses is given, so pass statuses=['open', 'fixed'] to get all of a run's findings.
+            offset: Number of findings to skip, for paging through results
         """
-        findings = api.list_ai_pentest_findings_all(ai_pentest_id, statuses=statuses)
-        blocks = []
-        for finding in findings:
+        page = api.list_ai_pentest_findings(ai_pentest_id, statuses=statuses, run_id=run_id,
+                                            limit=AI_PENTEST_FINDINGS_PAGE_SIZE, offset=offset)
+        if not page.results:
+            return "No findings found."
+
+        end = offset + len(page.results)
+        header = f"Findings {offset + 1}-{end} of {page.count}"
+        if page.next:
+            header += f" (call again with offset={end} for more)"
+        blocks = [header]
+        for finding in page.results:
             block = [
                 f"{finding.id} - {finding.title}",
                 f"  severity: {finding.severity}",
@@ -610,6 +626,10 @@ def main():
                 f"  impact: {finding.impact}",
                 f"  likelihood: {finding.likelihood}",
             ]
+            if finding.first_seen_at:
+                block.append(f"  first_seen_at: {finding.first_seen_at}")
+            if finding.first_seen_in:
+                block.append(f"  first_seen_in: {finding.first_seen_in}")
             if finding.location:
                 lines = ", ".join(finding.location.lines or [])
                 block.append(f"  location: {finding.location.file or '(unknown file)'}{f' (lines {lines})' if lines else ''}")
@@ -622,7 +642,7 @@ def main():
             if finding.retest_summary:
                 block.append(f"  retest_summary: {finding.retest_summary}")
             blocks.append("\n".join(block))
-        return "\n\n".join(blocks) or "No findings found."
+        return "\n\n".join(blocks)
 
     @mcp.tool()
     async def start_ai_pentest_release_test(ai_pentest_id: str) -> str:

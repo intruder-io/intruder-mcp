@@ -312,6 +312,8 @@ class AiPentestFinding(BaseModel):
     remediation: str
     retest_summary: Optional[str] = None
     location: Optional[AiPentestFindingLocation] = None
+    first_seen_at: Optional[datetime] = None
+    first_seen_in: Optional[str] = None
 
 class PaginatedAiPentestList(PaginatedResponse):
     results: List[AiPentest]
