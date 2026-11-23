@@ -3,8 +3,8 @@
   "name": "intruder",
   "display_name": "Intruder",
   "version": "0.1.6",
-  "description": "Query and manage your Intruder targets, issues, scans and attack surface.",
-  "long_description": "Connect Claude to [Intruder](https://www.intruder.io/) to ask about your targets, issues, open ports and TLS certificates, start or cancel scans, and manage scan schedules. Requires an Intruder API key: see [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).",
+  "description": "Query and manage your Intruder targets, issues, scans, attack surface and AI pentests.",
+  "long_description": "Connect Claude to [Intruder](https://www.intruder.io/) to ask about your targets, issues, open ports and TLS certificates, start or cancel scans, manage scan schedules, see AI pentest findings, start retests and release tests, and cancel AI pentest runs. Requires an Intruder API key: see [Creating an access token](https://developers.intruder.io/docs/creating-an-access-token).",
   "author": {
     "name": "Intruder",
     "url": "https://www.intruder.io"
@@ -41,6 +41,11 @@
     { "name": "list_scans", "description": "List scans" },
     { "name": "get_scan", "description": "Show the details of a scan" },
     { "name": "list_scan_schedules", "description": "List scan schedules" },
+    { "name": "list_ai_pentests", "description": "List AI pentests" },
+    { "name": "get_ai_pentest", "description": "Show the details of an AI pentest" },
+    { "name": "list_ai_pentest_findings", "description": "List the findings from an AI pentest, or from one of its runs" },
+    { "name": "list_ai_pentest_runs", "description": "List the runs of an AI pentest and why any failed" },
+    { "name": "get_ai_pentest_run", "description": "Show the details of an AI pentest run" },
     { "name": "create_targets", "description": "Add targets (makes changes)" },
     { "name": "delete_target", "description": "Delete a target (makes changes)" },
     { "name": "create_target_tag", "description": "Add a tag to a target (makes changes)" },
@@ -50,7 +55,10 @@
     { "name": "snooze_occurrence", "description": "Snooze an issue occurrence (makes changes)" },
     { "name": "create_scan_schedule", "description": "Create a recurring scan schedule (makes changes)" },
     { "name": "update_scan_schedule", "description": "Change a scan schedule (makes changes)" },
-    { "name": "delete_scan_schedule", "description": "Delete a scan schedule (makes changes)" }
+    { "name": "delete_scan_schedule", "description": "Delete a scan schedule (makes changes)" },
+    { "name": "start_ai_pentest_release_test", "description": "Start a release test of an AI pentest (makes changes)" },
+    { "name": "start_ai_pentest_retest", "description": "Retest findings from an AI pentest (makes changes)" },
+    { "name": "cancel_ai_pentest_run", "description": "Cancel a run of an AI pentest (makes changes)" }
   ],
   "user_config": {
     "api_key": {

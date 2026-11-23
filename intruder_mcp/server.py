@@ -24,6 +24,11 @@ def _format_date(value: datetime) -> str:
     return value.date().isoformat()
 
 
+def _indent(text: str) -> str:
+    # Continuation lines are indented so text from the tested app can't pass for a new finding or field.
+    return text.replace("\n", "\n    ")
+
+
 def _format_target(target: Target) -> str:
     line = f"{target.id} - {target.address}"
     if target.ip_address and target.ip_address != target.address:
@@ -74,6 +79,8 @@ def main():
         _icon("icon.svg", "image/svg+xml", "any"),
     ])
     PAGE_SIZE = 100
+    # each finding carries its full write-up (up to ~3.5k tokens), so a bigger page can exceed MCP clients' output limits
+    AI_PENTEST_FINDINGS_PAGE_SIZE = 5
 
     @mcp.tool()
     async def get_user() -> str:
@@ -554,6 +561,183 @@ def main():
         """
         api.delete_scan_schedule(schedule_id)
         return f"Deleted scan schedule {schedule_id}"
+
+    @mcp.tool()
+    async def list_ai_pentests() -> str:
+        """
+        List all AI pentests in the Intruder account with their IDs, the URL of the application being tested and status (one of 'pending', 'started', 'completed', 'cancelled', 'aborted', 'cancellation_pending').
+        """
+        ai_pentests = api.list_ai_pentests_all()
+        formatted = [f"{ai_pentest.id} - {ai_pentest.url} ({ai_pentest.status})" for ai_pentest in ai_pentests]
+        return "\n".join(formatted) or "No AI pentests found."
+
+    @mcp.tool()
+    async def get_ai_pentest(ai_pentest_id: str) -> str:
+        """
+        Get details of a specific AI pentest.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to get
+        """
+        ai_pentest = api.get_ai_pentest(ai_pentest_id)
+        details = [
+            f"AI pentest {ai_pentest.id}",
+            f"URL: {ai_pentest.url}",
+            f"Application: {ai_pentest.application_name or '(none)'}",
+            f"Environment: {ai_pentest.environment or '(none)'}",
+            f"Status: {ai_pentest.status}",
+            f"Created: {ai_pentest.created_at}",
+        ]
+        if ai_pentest.completed_at:
+            details.append(f"Completed: {ai_pentest.completed_at}")
+        if ai_pentest.canceled_at:
+            details.append(f"Cancelled: {ai_pentest.canceled_at}")
+        if ai_pentest.retest_status:
+            details.append(f"Latest retest: {ai_pentest.retest_status}")
+        if ai_pentest.release_test_status:
+            details.append(f"Latest release test: {ai_pentest.release_test_status}")
+        return "\n".join(details)
+
+    @mcp.tool()
+    async def list_ai_pentest_findings(ai_pentest_id: str, statuses: Optional[List[str]] = None,
+                                       run_id: Optional[str] = None, offset: int = 0) -> str:
+        """
+        List findings of an AI pentest, most severe first, including the full write-up for each.
+        A finding is new in a run when its first_seen_in matches that run's ID.
+        Returns up to 5 findings per call. If there are more, call again with the offset given.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to list findings for
+            statuses: Filter by finding statuses (any of 'open', 'fixed'). Defaults to open findings only.
+            run_id: Only return findings from this run, including ones an earlier run found first. Only open findings
+                are returned unless statuses is given, so pass statuses=['open', 'fixed'] to get all of a run's findings.
+            offset: Number of findings to skip, for paging through results
+        """
+        offset = max(offset, 0)
+        page = api.list_ai_pentest_findings(ai_pentest_id, statuses=statuses, run_id=run_id,
+                                            limit=AI_PENTEST_FINDINGS_PAGE_SIZE, offset=offset)
+        if not page.results:
+            if page.count:
+                return f"No findings at offset {offset}. There are {page.count} in total, so use a lower offset."
+            return "No findings found."
+
+        end = offset + len(page.results)
+        header = f"Findings {offset + 1}-{end} of {page.count}"
+        if page.next:
+            header += f" (call again with offset={end} for more)"
+        blocks = [header]
+        for finding in page.results:
+            block = [
+                f"{finding.id} - {_indent(finding.title)}",
+                f"  severity: {finding.severity}",
+                f"  status: {finding.status}",
+                f"  impact: {finding.impact}",
+                f"  likelihood: {finding.likelihood}",
+            ]
+            if finding.first_seen_at:
+                block.append(f"  first_seen_at: {finding.first_seen_at}")
+            if finding.first_seen_in:
+                block.append(f"  first_seen_in: {finding.first_seen_in}")
+            if finding.location:
+                lines = ", ".join(finding.location.lines or [])
+                block.append(f"  location: {finding.location.file or '(unknown file)'}{f' (lines {lines})' if lines else ''}")
+            block.extend([
+                f"  overview: {_indent(finding.overview)}",
+                f"  evidence: {_indent(finding.evidence)}",
+                f"  technical_details: {_indent(finding.technical_details)}",
+                f"  remediation: {_indent(finding.remediation)}",
+            ])
+            if finding.retest_summary:
+                block.append(f"  retest_summary: {_indent(finding.retest_summary)}")
+            blocks.append("\n".join(block))
+        return "\n\n".join(blocks)
+
+    @mcp.tool()
+    async def start_ai_pentest_release_test(ai_pentest_id: str) -> str:
+        """
+        Start a release test of an AI pentest, using its existing configuration.
+        Only call this when the user asks to start one. It fails if a test is already running,
+        or if the full test has no results or recorded commits yet.
+        Check its progress with get_ai_pentest_run.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to release test
+        """
+        run = api.start_ai_pentest_release_test(ai_pentest_id)
+        return f"Started release test {run.id} ({run.status})"
+
+    @mcp.tool()
+    async def start_ai_pentest_retest(ai_pentest_id: str, finding_ids: List[str]) -> str:
+        """
+        Start a retest of findings from an AI pentest to check whether they've been fixed, using its existing
+        configuration. Only call this when the user asks to start one. Get finding IDs from list_ai_pentest_findings.
+        Findings that aren't open are skipped. It fails if none of them are open, or if a test is already running.
+        Check its progress with get_ai_pentest_run.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to retest
+            finding_ids: The IDs of the findings to retest
+        """
+        run = api.start_ai_pentest_retest(ai_pentest_id, finding_ids)
+        return f"Started retest {run.id} ({run.status})"
+
+    @mcp.tool()
+    async def cancel_ai_pentest_run(ai_pentest_id: str, run_id: str) -> str:
+        """
+        Cancel an in-progress run of an AI pentest: its full test, a retest or a release test.
+        Only call this when the user asks to cancel one. Get run IDs from list_ai_pentest_runs.
+        Retests and release tests are cancelled straight away. A full test is 'cancellation_pending' until it has
+        stopped. It fails if the run has finished or is already being cancelled.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest
+            run_id: The ID of the run to cancel
+        """
+        run = api.cancel_ai_pentest_run(ai_pentest_id, run_id)
+        if run.status == "cancellation_pending":
+            return f"Cancellation requested for {run.type} {run.id} ({run.status})"
+        return f"Cancelled {run.type} {run.id} ({run.status})"
+
+    def format_detail_value(value) -> str:
+        return ", ".join(str(item) for item in value) if isinstance(value, list) else str(value)
+
+    def format_ai_pentest_run(run) -> str:
+        lines = [f"{run.id} - {run.type} ({run.status}), started {run.created_at}"]
+        for error in run.preflight_errors:
+            detail = ", ".join(
+                f"{key}: {format_detail_value(value)}" for key, value in error.detail.items() if value is not None
+            )
+            lines.append(f"  preflight error: {error.code}" + (f" ({detail})" if detail else ""))
+        return "\n".join(lines)
+
+    @mcp.tool()
+    async def list_ai_pentest_runs(ai_pentest_id: str) -> str:
+        """
+        List the runs of an AI pentest (its full test, retests and release tests), newest first, with their
+        status (one of 'in_progress', 'cancellation_pending', 'completed', 'failed', 'cancelled') and preflight errors explaining a failure.
+        A failed run's preflight errors can appear a few seconds after it fails, so fetch it again with
+        get_ai_pentest_run if it has none. If it still has none after a minute, there won't be any.
+        A restarted full test shows when its first attempt started.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest to list runs for
+        """
+        runs = api.list_ai_pentest_runs_all(ai_pentest_id)
+        return "\n".join(format_ai_pentest_run(run) for run in runs) or "No runs found."
+
+    @mcp.tool()
+    async def get_ai_pentest_run(ai_pentest_id: str, run_id: str) -> str:
+        """
+        Get a run of an AI pentest with its status (one of 'in_progress', 'cancellation_pending', 'completed', 'failed', 'cancelled') and
+        preflight errors explaining a failure. A failed run's preflight errors can appear a few seconds after it
+        fails, so fetch it again if it has none. If it still has none after a minute, there won't be any.
+        A restarted full test shows when its first attempt started.
+
+        Args:
+            ai_pentest_id: The ID of the AI pentest
+            run_id: The ID of the run to get
+        """
+        return format_ai_pentest_run(api.get_ai_pentest_run(ai_pentest_id, run_id))
 
     mcp.run(transport="stdio")
 

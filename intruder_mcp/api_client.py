@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any, Generator
 import httpx
 import os
+import re
 import json
 from datetime import datetime
 from .enums import (
@@ -11,7 +12,8 @@ from .enums import (
     PaginatedTargetList, PaginatedLicensesList, ScannerOutputList, SnoozeOccurrenceRequest,
     OccurrencesSnoozeReasonEnum, AssessmentScheduleList, AssessmentScheduleListResponse,
     AssessmentScheduleCreateUpdateRequest, PatchedAssessmentScheduleCreateUpdateRequest, ScanFrequencyEnum,
-    PaginatedNetworkServiceList
+    PaginatedNetworkServiceList, AiPentest, AiPentestRun, PaginatedAiPentestList,
+    PaginatedAiPentestFindingList, PaginatedAiPentestRunList
 )
 
 
@@ -27,6 +29,14 @@ def _raise_on_error(response: httpx.Response) -> None:
     raise httpx.HTTPStatusError(message, request=response.request, response=response)
 
 
+# IDs are interpolated into URL paths, and httpx resolves ".." segments, so anything that isn't a
+# public ID (e.g. "../../scans/123" planted in a finding's evidence) could reach a different endpoint.
+def _public_id(value: str, prefix: str) -> str:
+    if not re.fullmatch(rf"{prefix}_[A-Za-z0-9]+", value):
+        raise ValueError(f"Invalid ID {value!r}: expected an ID starting with {prefix}_")
+    return value
+
+
 class IntruderAPI:
     def __init__(self, api_key: str):
         self.base_url = "https://api.intruder.io/v1"
@@ -36,6 +46,8 @@ class IntruderAPI:
         }
         self.client = httpx.Client(
             headers=self.headers,
+            # starting and cancelling AI pentest runs wait on the scanner, which can take longer than httpx's 5s default
+            timeout=60,
             event_hooks={"response": [_raise_on_error]},
         )
 
@@ -235,6 +247,79 @@ class IntruderAPI:
             if not response.next:
                 break
             offset += len(response.results)
+
+    def list_ai_pentests(self, limit: Optional[int] = None, offset: Optional[int] = None) -> PaginatedAiPentestList:
+        params = {}
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestList(**self.client.get(f"{self.base_url}/ai-pentests/", params=params).json())
+
+    def list_ai_pentests_all(self) -> Generator[AiPentest, None, None]:
+        offset = 0
+        while True:
+            response = self.list_ai_pentests(limit=100, offset=offset)
+            for ai_pentest in response.results:
+                yield ai_pentest
+            if not response.next:
+                break
+            offset += len(response.results)
+
+    def get_ai_pentest(self, ai_pentest_id: str) -> AiPentest:
+        return AiPentest(**self.client.get(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/").json())
+
+    def list_ai_pentest_findings(self, ai_pentest_id: str, statuses: Optional[List[str]] = None,
+                                 run_id: Optional[str] = None,
+                                 limit: Optional[int] = None,
+                                 offset: Optional[int] = None) -> PaginatedAiPentestFindingList:
+        params = {}
+        if statuses:
+            params["statuses"] = ",".join(statuses)
+        if run_id:
+            params["run_id"] = run_id
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestFindingList(
+            **self.client.get(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/findings/", params=params).json()
+        )
+
+    def start_ai_pentest_release_test(self, ai_pentest_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/release-tests/").json())
+
+    def start_ai_pentest_retest(self, ai_pentest_id: str, finding_ids: List[str]) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(
+            f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/retests/", json={"finding_ids": finding_ids}
+        ).json())
+
+    def cancel_ai_pentest_run(self, ai_pentest_id: str, run_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.post(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/runs/{_public_id(run_id, 'aipr')}/cancel/").json())
+
+    def list_ai_pentest_runs(self, ai_pentest_id: str, limit: Optional[int] = None,
+                             offset: Optional[int] = None) -> PaginatedAiPentestRunList:
+        params = {}
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return PaginatedAiPentestRunList(
+            **self.client.get(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/runs/", params=params).json()
+        )
+
+    def list_ai_pentest_runs_all(self, ai_pentest_id: str) -> Generator[AiPentestRun, None, None]:
+        offset = 0
+        while True:
+            response = self.list_ai_pentest_runs(ai_pentest_id, limit=100, offset=offset)
+            for run in response.results:
+                yield run
+            if not response.next:
+                break
+            offset += len(response.results)
+
+    def get_ai_pentest_run(self, ai_pentest_id: str, run_id: str) -> AiPentestRun:
+        return AiPentestRun(**self.client.get(f"{self.base_url}/ai-pentests/{_public_id(ai_pentest_id, 'aip')}/runs/{_public_id(run_id, 'aipr')}/").json())
 
     def create_scan(self, target_addresses: Optional[List[str]] = None,
                    tag_names: Optional[List[str]] = None) -> Scan:
