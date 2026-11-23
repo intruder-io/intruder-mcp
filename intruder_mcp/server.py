@@ -24,6 +24,11 @@ def _format_date(value: datetime) -> str:
     return value.date().isoformat()
 
 
+def _indent(text: str) -> str:
+    # Continuation lines are indented so text from the tested app can't pass for a new finding or field.
+    return text.replace("\n", "\n    ")
+
+
 def _format_target(target: Target) -> str:
     line = f"{target.id} - {target.address}"
     if target.ip_address and target.ip_address != target.address:
@@ -608,9 +613,12 @@ def main():
                 are returned unless statuses is given, so pass statuses=['open', 'fixed'] to get all of a run's findings.
             offset: Number of findings to skip, for paging through results
         """
+        offset = max(offset, 0)
         page = api.list_ai_pentest_findings(ai_pentest_id, statuses=statuses, run_id=run_id,
                                             limit=AI_PENTEST_FINDINGS_PAGE_SIZE, offset=offset)
         if not page.results:
+            if page.count:
+                return f"No findings at offset {offset}. There are {page.count} in total, so use a lower offset."
             return "No findings found."
 
         end = offset + len(page.results)
@@ -620,7 +628,7 @@ def main():
         blocks = [header]
         for finding in page.results:
             block = [
-                f"{finding.id} - {finding.title}",
+                f"{finding.id} - {_indent(finding.title)}",
                 f"  severity: {finding.severity}",
                 f"  status: {finding.status}",
                 f"  impact: {finding.impact}",
@@ -634,13 +642,13 @@ def main():
                 lines = ", ".join(finding.location.lines or [])
                 block.append(f"  location: {finding.location.file or '(unknown file)'}{f' (lines {lines})' if lines else ''}")
             block.extend([
-                f"  overview: {finding.overview}",
-                f"  evidence: {finding.evidence}",
-                f"  technical_details: {finding.technical_details}",
-                f"  remediation: {finding.remediation}",
+                f"  overview: {_indent(finding.overview)}",
+                f"  evidence: {_indent(finding.evidence)}",
+                f"  technical_details: {_indent(finding.technical_details)}",
+                f"  remediation: {_indent(finding.remediation)}",
             ])
             if finding.retest_summary:
-                block.append(f"  retest_summary: {finding.retest_summary}")
+                block.append(f"  retest_summary: {_indent(finding.retest_summary)}")
             blocks.append("\n".join(block))
         return "\n\n".join(blocks)
 
